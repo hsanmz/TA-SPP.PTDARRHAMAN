@@ -55,7 +55,7 @@ async function handleCronRequest(request: Request): Promise<Response | null> {
   }
 
   // Verifikasi CRON_SECRET jika dikonfigurasi
-  const cronSecret = process.env.CRON_SECRET;
+  const cronSecret = process.env["CRON_SECRET"];
   const authHeader = request.headers.get("authorization");
   const secretHeader = request.headers.get("x-cron-secret");
   const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
