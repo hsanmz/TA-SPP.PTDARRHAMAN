@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "payptd",
+  "compatibility_date": "2026-10-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": ".output/server/index.mjs",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".output/public"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB_STORAGE",
+      "database_name": "ta-spp-storage",
+      "database_id": "bcf1d253-7f8a-4669-b399-05d06127240f"
+    }
+  ]
+}

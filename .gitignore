@@ -3,8 +3,14 @@
 
 # Node
 node_modules/
+# Build outputs
 dist/
 dist-ssr/
+.output/
+.vinxi/
+.nitro/
+.wrangler/
+data/
 
 # Python
 __pycache__/
