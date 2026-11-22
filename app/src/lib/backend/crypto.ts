@@ -56,7 +56,8 @@ export async function verifyPassword(password: string, stored: string): Promise<
     let diff = 0;
     for (let i = 0; i < candidate.length; i++) diff |= candidate[i]! ^ expected[i]!;
     return diff === 0;
-  } catch {
+  } catch (err) {
+    console.error("[crypto.verifyPassword error]:", err);
     return false;
   }
 }

@@ -45,7 +45,12 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const result = await login({ data: { username: username.trim().toLowerCase(), password } });
+      const cleanUsername = username
+        .trim()
+        .replace(/^['"]|['"]$/g, "")
+        .toLowerCase();
+      const cleanPassword = password.trim().replace(/^['"]|['"]$/g, "");
+      const result = await login({ data: { username: cleanUsername, password: cleanPassword } });
       setToken(result.token);
       setSuccessName(result.user.full_name || username);
       setSuccess(true);

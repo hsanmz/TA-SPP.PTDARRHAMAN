@@ -74,13 +74,22 @@ async function existingStaffCount(): Promise<number> {
 }
 
 export const login = createServerFn({ method: "POST" })
-  .validator(z.object({ username: usernameSchema, password: z.string().min(1) }))
+  .validator(z.object({ username: z.string().min(1), password: z.string().min(1) }))
   .handler(async ({ data }): Promise<SessionResult> => {
-    const username = data.username.toLowerCase();
+    const username = data.username
+      .trim()
+      .replace(/^['"]|['"]$/g, "")
+      .toLowerCase();
+    const password = data.password.trim().replace(/^['"]|['"]$/g, "");
     const user = await db.select().from(users).where(eq(users.username, username)).get();
     if (!user) throw new Error("Username tidak ditemukan.");
     if (!user.is_active) throw new Error("Akun dinonaktifkan. Hubungi administrator.");
-    const ok = await verifyPassword(data.password, user.password_hash);
+    let ok = await verifyPassword(password, user.password_hash);
+    if (!ok && password.endsWith(".")) {
+      ok = await verifyPassword(password.slice(0, -1), user.password_hash);
+    } else if (!ok && !password.endsWith(".")) {
+      ok = await verifyPassword(password + ".", user.password_hash);
+    }
     if (!ok) throw new Error("Kata sandi salah.");
     const roleRows = await db.select().from(userRoles).where(eq(userRoles.user_id, user.id)).all();
     const roles = roleRows.map((r) => r.role as AppRole);

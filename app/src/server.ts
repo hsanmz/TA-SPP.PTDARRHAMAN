@@ -165,16 +165,21 @@ async function handleProofRequest(request: Request, env: unknown): Promise<Respo
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      setServerEnv(env);
+      const resolvedEnv =
+        env ??
+        (request as unknown as { runtime?: { cloudflare?: { env?: unknown } } })?.runtime
+          ?.cloudflare?.env ??
+        (globalThis as unknown as { __env__?: unknown })?.__env__;
+      setServerEnv(resolvedEnv);
 
-      const proofResponse = await handleProofRequest(request, env);
+      const proofResponse = await handleProofRequest(request, resolvedEnv);
       if (proofResponse) return proofResponse;
 
-      const cronResponse = await handleCronRequest(request, env);
+      const cronResponse = await handleCronRequest(request, resolvedEnv);
       if (cronResponse) return cronResponse;
 
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
+      const response = await handler.fetch(request, resolvedEnv, ctx);
       return await normalizeCatastrophicSsrResponse(response, request);
     } catch (error) {
       console.error(error);
