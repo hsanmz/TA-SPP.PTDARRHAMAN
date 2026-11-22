@@ -1,21 +1,21 @@
-import type { ReactNode } from "react"
-import type { LucideIcon } from "lucide-react"
-import { DocTrigger } from "@/components/ui/doc-sheet"
-import { Skeleton } from "@/components/ui/skeleton"
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
+import { DocTrigger } from "@/components/ui/doc-sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface HeroChip {
-  icon: LucideIcon
-  label: string
+  icon: LucideIcon;
+  label: string;
 }
 
 interface PageHeroProps {
-  eyebrow?: string
-  title: string
-  description?: string
-  chips?: HeroChip[]
-  actions?: ReactNode
-  docKey?: string
-  loading?: boolean
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  chips?: HeroChip[];
+  actions?: ReactNode;
+  docKey?: string;
+  loading?: boolean;
 }
 
 /**
@@ -33,7 +33,7 @@ export default function PageHero({
   loading = false,
 }: PageHeroProps) {
   if (loading) {
-    return <Skeleton className="h-44 w-full rounded-3xl" />
+    return <Skeleton className="h-44 w-full rounded-3xl" />;
   }
 
   return (
@@ -55,7 +55,7 @@ export default function PageHero({
           {chips.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {chips.map((chip) => {
-                const ChipIcon = chip.icon
+                const ChipIcon = chip.icon;
                 return (
                   <span
                     key={chip.label}
@@ -64,7 +64,7 @@ export default function PageHero({
                     <ChipIcon className="h-3.5 w-3.5" />
                     {chip.label}
                   </span>
-                )
+                );
               })}
             </div>
           )}
@@ -77,5 +77,5 @@ export default function PageHero({
         )}
       </div>
     </div>
-  )
+  );
 }

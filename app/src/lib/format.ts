@@ -74,16 +74,12 @@ export function terbilang(n: number | null | undefined): string {
     if (num < 20) return bilang(num - 10) + " Belas";
     if (num < 100)
       return (
-        bilang(Math.floor(num / 10)) +
-        " Puluh" +
-        (num % 10 !== 0 ? " " + bilang(num % 10) : "")
+        bilang(Math.floor(num / 10)) + " Puluh" + (num % 10 !== 0 ? " " + bilang(num % 10) : "")
       );
     if (num < 200) return "Seratus" + (num - 100 !== 0 ? " " + bilang(num - 100) : "");
     if (num < 1000)
       return (
-        bilang(Math.floor(num / 100)) +
-        " Ratus" +
-        (num % 100 !== 0 ? " " + bilang(num % 100) : "")
+        bilang(Math.floor(num / 100)) + " Ratus" + (num % 100 !== 0 ? " " + bilang(num % 100) : "")
       );
     if (num < 2000) return "Seribu" + (num - 1000 !== 0 ? " " + bilang(num - 1000) : "");
     if (num < 1000000)
@@ -113,4 +109,3 @@ export function terbilang(n: number | null | undefined): string {
 
   return bilang(nominal).trim() + " Rupiah";
 }
-

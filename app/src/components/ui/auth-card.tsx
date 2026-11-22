@@ -1,42 +1,42 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
-import { Eye, EyeOff, Lock, ShieldCheck, User } from "lucide-react"
-import { Button } from "./button"
-import { Label } from "./label"
-import { AuthRecoveryForm } from "./auth-recovery-form"
-import { cn } from "@/lib/utils"
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { Eye, EyeOff, Lock, ShieldCheck, User } from "lucide-react";
+import { Button } from "./button";
+import { Label } from "./label";
+import { AuthRecoveryForm } from "./auth-recovery-form";
+import { cn } from "@/lib/utils";
 
-const GOLD = "var(--color-gold-accent, #D4A853)"
-const GOLD_FAINT = "color-mix(in srgb, var(--color-gold-accent, #D4A853) 55%, transparent)"
-const EMERALD = "var(--color-emerald-primary, #1A6B47)"
+const GOLD = "var(--color-gold-accent, #D4A853)";
+const GOLD_FAINT = "color-mix(in srgb, var(--color-gold-accent, #D4A853) 55%, transparent)";
+const EMERALD = "var(--color-emerald-primary, #1A6B47)";
 
 // Font judul dipaksa lewat inline style agar identik di ketiga app — beberapa app
 // men-override h1 dengan font display (serif) di stylesheet globalnya.
-const HEADING_FONT = "var(--font-heading, 'DM Sans'), system-ui, sans-serif"
+const HEADING_FONT = "var(--font-heading, 'DM Sans'), system-ui, sans-serif";
 
 const inputBaseClass =
-  "flex h-11 w-full rounded-lg border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  "flex h-11 w-full rounded-lg border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 export interface AuthCardProps {
-  title: string
-  subtitle?: string
-  logoUrl?: string
-  loading?: boolean
-  success?: boolean
-  error?: string
-  successName?: string
-  onSubmit: (username: string, password: string) => void | Promise<void>
-  submitText?: string
-  forgotText?: string
-  onForgotClick?: () => void
-  badgeText?: string
-  badgeIcon?: ReactNode
+  title: string;
+  subtitle?: string;
+  logoUrl?: string;
+  loading?: boolean;
+  success?: boolean;
+  error?: string;
+  successName?: string;
+  onSubmit: (username: string, password: string) => void | Promise<void>;
+  submitText?: string;
+  forgotText?: string;
+  onForgotClick?: () => void;
+  badgeText?: string;
+  badgeIcon?: ReactNode;
   /**
    * Jika diisi, tautan lupa password akan menggeser (slide) kartu ke panel
    * pemulihan akun di dalam kartu yang sama — bukan membuka modal.
    */
-  recoveryMode?: "applicant" | "staff" | "mixed"
+  recoveryMode?: "applicant" | "staff" | "mixed";
   /** Base URL API untuk panel pemulihan (mis. `API_BASE`). */
-  recoveryApiBase?: string
+  recoveryApiBase?: string;
 }
 
 export function AuthCard({
@@ -56,40 +56,40 @@ export function AuthCard({
   recoveryMode,
   recoveryApiBase = "",
 }: AuthCardProps) {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showRecovery, setShowRecovery] = useState(false)
-  const [logoLoaded, setLogoLoaded] = useState(false)
-  const logoRef = useRef<HTMLImageElement | null>(null)
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const logoRef = useRef<HTMLImageElement | null>(null);
 
   // Tinggi kartu murni content-driven: elemen logo baru masuk ke alur layout
   // setelah gambar asli benar-benar selesai dimuat. Selama logo belum tampil
   // (belum tersedia / masih dimuat / gagal) tidak ada ruang yang disisihkan,
   // placeholder, skeleton, maupun gambar pengganti.
   useEffect(() => {
-    setLogoLoaded(false)
-    const img = logoRef.current
+    setLogoLoaded(false);
+    const img = logoRef.current;
     // Gambar dari cache bisa terlewat event onLoad — cek langsung statusnya.
-    if (img?.complete && img.naturalWidth > 0) setLogoLoaded(true)
-  }, [logoUrl])
+    if (img?.complete && img.naturalWidth > 0) setLogoLoaded(true);
+  }, [logoUrl]);
 
-  const canRecover = Boolean(recoveryMode)
-  const recovering = canRecover && showRecovery
+  const canRecover = Boolean(recoveryMode);
+  const recovering = canRecover && showRecovery;
   const recoveryApplicant: boolean | "mixed" =
-    recoveryMode === "applicant" ? true : recoveryMode === "mixed" ? "mixed" : false
+    recoveryMode === "applicant" ? true : recoveryMode === "mixed" ? "mixed" : false;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    void onSubmit(username.trim(), password)
+    event.preventDefault();
+    void onSubmit(username.trim(), password);
   }
 
   function handleForgot() {
     if (onForgotClick) {
-      onForgotClick()
-      return
+      onForgotClick();
+      return;
     }
-    if (canRecover) setShowRecovery(true)
+    if (canRecover) setShowRecovery(true);
   }
 
   return (
@@ -104,7 +104,11 @@ export function AuthCard({
             "flex transition-transform duration-300 ease-out",
             canRecover ? "w-[200%]" : "w-full",
           )}
-          style={canRecover ? { transform: recovering ? "translateX(-50%)" : "translateX(0)" } : undefined}
+          style={
+            canRecover
+              ? { transform: recovering ? "translateX(-50%)" : "translateX(0)" }
+              : undefined
+          }
         >
           {/* ── Panel: Login ── */}
           <div
@@ -122,11 +126,17 @@ export function AuthCard({
                   className={cn("mb-4 h-16 max-w-48 object-contain", !logoLoaded && "hidden")}
                 />
               ) : null}
-              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: HEADING_FONT }}>
+              <h1
+                className="text-2xl font-bold tracking-tight"
+                style={{ fontFamily: HEADING_FONT }}
+              >
                 {title}
               </h1>
               {subtitle ? (
-                <p className="mt-1 text-sm text-muted-foreground" style={{ fontFamily: HEADING_FONT }}>
+                <p
+                  className="mt-1 text-sm text-muted-foreground"
+                  style={{ fontFamily: HEADING_FONT }}
+                >
                   {subtitle}
                 </p>
               ) : null}
@@ -155,7 +165,10 @@ export function AuthCard({
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {error ? (
-                  <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                  >
                     {error}
                   </p>
                 ) : null}
@@ -198,7 +211,12 @@ export function AuthCard({
                     </button>
                   </div>
                 </div>
-                <Button type="submit" className="h-11 w-full rounded-[10px]" loading={loading} disabled={loading}>
+                <Button
+                  type="submit"
+                  className="h-11 w-full rounded-[10px]"
+                  loading={loading}
+                  disabled={loading}
+                >
                   {loading ? "Memproses…" : submitText}
                 </Button>
                 {forgotText ? (
@@ -245,5 +263,5 @@ export function AuthCard({
         </div>
       </div>
     </section>
-  )
+  );
 }

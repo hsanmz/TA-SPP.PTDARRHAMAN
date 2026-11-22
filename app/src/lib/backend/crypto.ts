@@ -1,4 +1,4 @@
-const ITERATIONS = 120_000;
+const ITERATIONS = 100_000;
 const KEY_LEN = 32;
 const ALGO = "SHA-256";
 
@@ -49,12 +49,16 @@ export async function verifyPassword(password: string, stored: string): Promise<
   if (scheme !== "pbkdf2" || !iterationsStr || !saltB64 || !hashB64) return false;
   const iterations = Number(iterationsStr);
   if (!Number.isFinite(iterations) || iterations < 1) return false;
-  const candidate = await pbkdf2(password, fromBase64(saltB64), iterations);
-  const expected = fromBase64(hashB64);
-  if (candidate.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < candidate.length; i++) diff |= candidate[i]! ^ expected[i]!;
-  return diff === 0;
+  try {
+    const candidate = await pbkdf2(password, fromBase64(saltB64), iterations);
+    const expected = fromBase64(hashB64);
+    if (candidate.length !== expected.length) return false;
+    let diff = 0;
+    for (let i = 0; i < candidate.length; i++) diff |= candidate[i]! ^ expected[i]!;
+    return diff === 0;
+  } catch {
+    return false;
+  }
 }
 
 export function randomToken(): string {

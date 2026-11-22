@@ -140,11 +140,10 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-export interface SelectProps
-  extends Omit<
-    React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>,
-    "value" | "onValueChange"
-  > {
+export interface SelectProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>,
+  "value" | "onValueChange"
+> {
   label?: string;
   error?: string;
   placeholder?: string;

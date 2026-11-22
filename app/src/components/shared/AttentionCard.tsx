@@ -1,16 +1,16 @@
-import { Link } from "@tanstack/react-router"
-import type { LucideIcon } from "lucide-react"
-import { AlertTriangle, ArrowRight } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import { Link } from "@tanstack/react-router";
+import type { LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export interface AttentionItem {
-  label: string
-  value: number
-  icon: LucideIcon
-  tone: "amber" | "red" | "blue" | "emerald"
-  href: string
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  tone: "amber" | "red" | "blue" | "emerald";
+  href: string;
 }
 
 const TONE = {
@@ -18,14 +18,14 @@ const TONE = {
   red: { chip: "bg-red-50", text: "text-red-600", badge: "bg-red-500" },
   blue: { chip: "bg-blue-50", text: "text-blue-600", badge: "bg-blue-500" },
   emerald: { chip: "bg-emerald-50", text: "text-emerald-600", badge: "bg-emerald-500" },
-} as const
+} as const;
 
 interface AttentionCardProps {
-  title?: string
-  description?: string
-  items: AttentionItem[]
-  loading?: boolean
-  className?: string
+  title?: string;
+  description?: string;
+  items: AttentionItem[];
+  loading?: boolean;
+  className?: string;
 }
 
 /**
@@ -39,10 +39,15 @@ export default function AttentionCard({
   loading = false,
   className,
 }: AttentionCardProps) {
-  const hasAttention = items.some((item) => item.value > 0)
+  const hasAttention = items.some((item) => item.value > 0);
 
   return (
-    <Card className={cn("flex h-full flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}>
+    <Card
+      className={cn(
+        "flex h-full flex-col rounded-2xl border-slate-100 bg-white shadow-sm",
+        className,
+      )}
+    >
       <div className="border-b border-slate-50 px-5 py-4">
         <h2 className="flex items-center gap-2 font-heading text-base font-bold text-slate-900">
           <AlertTriangle
@@ -65,8 +70,8 @@ export default function AttentionCard({
           </div>
         ) : (
           items.map((item) => {
-            const tone = TONE[item.tone]
-            const Icon = item.icon
+            const tone = TONE[item.tone];
+            const Icon = item.icon;
             return (
               <Link
                 key={item.label}
@@ -94,10 +99,10 @@ export default function AttentionCard({
                 </span>
                 <ArrowRight className="h-3.5 w-3.5 text-slate-300 transition-colors group-hover:text-primary" />
               </Link>
-            )
+            );
           })
         )}
       </div>
     </Card>
-  )
+  );
 }

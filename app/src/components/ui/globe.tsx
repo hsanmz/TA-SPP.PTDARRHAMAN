@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * GlobeLogo — bola "dot-sphere" murni CSS, di tengahnya berisi mark logo.
@@ -18,18 +18,18 @@ import { cn } from '@/lib/utils'
  * #1A6B47 + gold-dark #B88F3D.
  */
 
-const EMERALD = '26, 107, 71'
-const GOLD = '184, 143, 61'
+const EMERALD = "26, 107, 71";
+const GOLD = "184, 143, 61";
 
 export interface GlobeLogoProps {
   /** Key setting `favicon` — mark/bentuk perseginya. Kalau kosong atau gagal dimuat,
    *  tampilkan fallback `ار` yang sama dengan dipakai di Footer & LandingPage. */
-  markUrl?: string
+  markUrl?: string;
   /** Key setting `logo` — wordmark lebar, diletakkan di samping bola. */
-  wordmarkUrl?: string
+  wordmarkUrl?: string;
   /** Sisi penempatan wordmark relatif terhadap bola. */
-  wordmarkSide?: 'left' | 'right'
-  className?: string
+  wordmarkSide?: "left" | "right";
+  className?: string;
 }
 
 /**
@@ -50,12 +50,12 @@ function FallbackMark() {
     >
       ار
     </span>
-  )
+  );
 }
 
-function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = 'left', className }: GlobeLogoProps) {
-  const [markBroken, setMarkBroken] = useState(false)
-  const [wordmarkBroken, setWordmarkBroken] = useState(false)
+function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = "left", className }: GlobeLogoProps) {
+  const [markBroken, setMarkBroken] = useState(false);
+  const [wordmarkBroken, setWordmarkBroken] = useState(false);
 
   // Brand bisa berubah lewat SSE /companyprofile/events. Status "rusak" harus
   // dibersihkan saat URL berubah supaya gambar baru sempat dicoba lagi, bukan
@@ -65,20 +65,20 @@ function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = 'left', className }: G
   // sinkron (men memicu render kedua yang sia-sia) dan di-flag eslint
   // react-hooks/set-state-in-effect. Pola "adjust state when props change"
   // dari React-lah yang dipakai di sini.
-  const [seenMarkUrl, setSeenMarkUrl] = useState(markUrl)
+  const [seenMarkUrl, setSeenMarkUrl] = useState(markUrl);
   if (markUrl !== seenMarkUrl) {
-    setSeenMarkUrl(markUrl)
-    setMarkBroken(false)
+    setSeenMarkUrl(markUrl);
+    setMarkBroken(false);
   }
 
-  const [seenWordmarkUrl, setSeenWordmarkUrl] = useState(wordmarkUrl)
+  const [seenWordmarkUrl, setSeenWordmarkUrl] = useState(wordmarkUrl);
   if (wordmarkUrl !== seenWordmarkUrl) {
-    setSeenWordmarkUrl(wordmarkUrl)
-    setWordmarkBroken(false)
+    setSeenWordmarkUrl(wordmarkUrl);
+    setWordmarkBroken(false);
   }
 
   return (
-    <div aria-hidden="true" className={cn('relative size-[250px] shrink-0', className)}>
+    <div aria-hidden="true" className={cn("relative size-[250px] shrink-0", className)}>
       {/* Ambient glow */}
       <div
         aria-hidden="true"
@@ -93,18 +93,18 @@ function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = 'left', className }: G
         aria-hidden="true"
         className="globe-motion absolute left-1/2 top-1/2 size-[286px] rounded-full border"
         style={{
-          transform: 'translate(-50%, -50%) rotateX(74deg)',
+          transform: "translate(-50%, -50%) rotateX(74deg)",
           borderColor: `rgba(${EMERALD}, 0.35)`,
-          animation: 'globeOrbit 18s linear infinite',
+          animation: "globeOrbit 18s linear infinite",
         }}
       />
       <div
         aria-hidden="true"
         className="globe-motion absolute left-1/2 top-1/2 size-[262px] rounded-full border border-dashed"
         style={{
-          transform: 'translate(-50%, -50%) rotateX(64deg)',
+          transform: "translate(-50%, -50%) rotateX(64deg)",
           borderColor: `rgba(${GOLD}, 0.30)`,
-          animation: 'globeOrbitAlt 26s linear infinite',
+          animation: "globeOrbitAlt 26s linear infinite",
         }}
       />
 
@@ -113,8 +113,8 @@ function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = 'left', className }: G
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden rounded-full"
         style={{
-          maskImage: 'radial-gradient(circle at 50% 50%, black 42%, transparent 72%)',
-          WebkitMaskImage: 'radial-gradient(circle at 50% 50%, black 42%, transparent 72%)',
+          maskImage: "radial-gradient(circle at 50% 50%, black 42%, transparent 72%)",
+          WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 42%, transparent 72%)",
           background: `radial-gradient(circle at 34% 30%, rgba(${EMERALD}, 0.16), rgba(${GOLD}, 0.10) 55%, transparent 78%)`,
           boxShadow: `inset -18px -10px 40px rgba(${GOLD}, 0.28), inset 12px 8px 34px rgba(${EMERALD}, 0.20)`,
         }}
@@ -123,16 +123,16 @@ function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = 'left', className }: G
           className="globe-motion absolute inset-0"
           style={{
             backgroundImage: `radial-gradient(circle, rgba(${EMERALD}, 0.90) 1.5px, transparent 1.7px)`,
-            backgroundSize: '16px 16px',
-            animation: 'globeDrift 30s linear infinite',
+            backgroundSize: "16px 16px",
+            animation: "globeDrift 30s linear infinite",
           }}
         />
         <div
           className="globe-motion absolute inset-0"
           style={{
             backgroundImage: `radial-gradient(circle, rgba(${GOLD}, 0.55) 1.1px, transparent 1.3px)`,
-            backgroundSize: '24px 24px',
-            animation: 'globeDriftAlt 46s linear infinite',
+            backgroundSize: "24px 24px",
+            animation: "globeDriftAlt 46s linear infinite",
           }}
         />
       </div>
@@ -159,13 +159,13 @@ function GlobeLogo({ markUrl, wordmarkUrl, wordmarkSide = 'left', className }: G
           aria-hidden="true"
           onError={() => setWordmarkBroken(true)}
           className={cn(
-            'absolute top-1/2 hidden h-8 w-auto max-w-44 -translate-y-1/2 object-contain opacity-90 sm:block',
-            wordmarkSide === 'left' ? 'right-[calc(100%+30px)]' : 'left-[calc(100%+30px)]',
+            "absolute top-1/2 hidden h-8 w-auto max-w-44 -translate-y-1/2 object-contain opacity-90 sm:block",
+            wordmarkSide === "left" ? "right-[calc(100%+30px)]" : "left-[calc(100%+30px)]",
           )}
         />
       )}
     </div>
-  )
+  );
 }
 
-export default GlobeLogo
+export default GlobeLogo;

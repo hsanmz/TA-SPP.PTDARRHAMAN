@@ -1,13 +1,5 @@
-import * as React from 'react'
-import {
-  BookOpen,
-  Clock,
-  Sparkles,
-  ShieldAlert,
-  HelpCircle,
-  Badge,
-  X,
-} from 'lucide-react'
+import * as React from "react";
+import { BookOpen, Clock, Sparkles, ShieldAlert, HelpCircle, Badge, X } from "lucide-react";
 import {
   Sheet,
   SheetClose,
@@ -15,81 +7,83 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from './sheet'
-import { Button } from './button'
-import { Badge as UiBadge } from './badge'
-import { cn } from '@/lib/utils'
+} from "./sheet";
+import { Button } from "./button";
+import { Badge as UiBadge } from "./badge";
+import { cn } from "@/lib/utils";
 
 export interface DocSection {
-  number: number
-  title: string
-  icon?: React.ComponentType<{ className?: string }>
-  content: React.ReactNode
+  number: number;
+  title: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  content: React.ReactNode;
 }
 
 export interface DocItem {
-  title: string
-  subtitle: string
-  sections: DocSection[]
-  contactNote?: string
+  title: string;
+  subtitle: string;
+  sections: DocSection[];
+  contactNote?: string;
 }
 
 export const SYSTEM_DOCS: Record<string, DocItem> = {
-  'spp-beranda': {
-    title: 'Dashboard Keuangan & SPP',
-    subtitle: 'Petunjuk operasional pemantauan tagihan, kas masuk, dan pengeluaran.',
+  "spp-beranda": {
+    title: "Dashboard Keuangan & SPP",
+    subtitle: "Petunjuk operasional pemantauan tagihan, kas masuk, dan pengeluaran.",
     sections: [
       {
         number: 1,
-        title: 'Ringkasan Kas & Tagihan',
+        title: "Ringkasan Kas & Tagihan",
         icon: Sparkles,
         content: (
           <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-            Halaman <strong>Beranda</strong> menyajikan rekapitulasi siswa aktif, total tagihan yang belum dibayar,
-            penerimaan semester ini, pengeluaran kas, serta transaksi yang memerlukan konfirmasi/verifikasi admin.
+            Halaman <strong>Beranda</strong> menyajikan rekapitulasi siswa aktif, total tagihan yang
+            belum dibayar, penerimaan semester ini, pengeluaran kas, serta transaksi yang memerlukan
+            konfirmasi/verifikasi admin.
           </p>
         ),
       },
       {
         number: 2,
-        title: 'Generator Tagihan SPP Bulanan',
+        title: "Generator Tagihan SPP Bulanan",
         icon: Clock,
         content: (
           <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-            Admin dapat menekan tombol <strong>Buat Tagihan SPP</strong> pada awal setiap bulan. Sistem secara otomatis
-            akan mengenerate invoice tagihan SPP untuk seluruh siswa aktif sesuai tarif tingkatan masing-masing.
+            Admin dapat menekan tombol <strong>Buat Tagihan SPP</strong> pada awal setiap bulan.
+            Sistem secara otomatis akan mengenerate invoice tagihan SPP untuk seluruh siswa aktif
+            sesuai tarif tingkatan masing-masing.
           </p>
         ),
       },
       {
         number: 3,
-        title: 'Verifikasi Pembayaran & QRIS',
+        title: "Verifikasi Pembayaran & QRIS",
         icon: ShieldAlert,
         content: (
           <p className="text-xs text-slate-600 leading-relaxed bg-amber-50/80 p-3.5 rounded-xl border border-amber-200/80 text-amber-950">
-            Pembayaran transfer manual atau unggah bukti transfer memerlukan persetujuan di menu Pembayaran.
-            Pembayaran instan QRIS diverifikasi langsung oleh sistem secara real-time.
+            Pembayaran transfer manual atau unggah bukti transfer memerlukan persetujuan di menu
+            Pembayaran. Pembayaran instan QRIS diverifikasi langsung oleh sistem secara real-time.
           </p>
         ),
       },
     ],
   },
-}
+};
 
 export interface DocButtonProps {
-  onClick?: () => void
-  title?: string
-  className?: string
-  variant?: 'light' | 'dark'
+  onClick?: () => void;
+  title?: string;
+  className?: string;
+  variant?: "light" | "dark";
 }
 
 export function DocButton({
   onClick,
-  title = 'Panduan & Cara Kerja',
+  title = "Panduan & Cara Kerja",
   className,
-  variant = 'light',
+  variant = "light",
 }: DocButtonProps) {
-  const isDark = variant === 'dark'
+  const isDark = variant === "dark";
   return (
     <Button
       type="button"
@@ -97,29 +91,29 @@ export function DocButton({
       size="icon"
       onClick={onClick}
       className={cn(
-        'h-10 w-10 rounded-xl transition-colors',
+        "h-10 w-10 rounded-xl transition-colors",
         isDark
-          ? 'text-emerald-100 hover:text-white hover:bg-white/15'
-          : 'text-slate-500 hover:text-emerald-700 hover:bg-emerald-50',
-        className
+          ? "text-emerald-100 hover:text-white hover:bg-white/15"
+          : "text-slate-500 hover:text-emerald-700 hover:bg-emerald-50",
+        className,
       )}
       title={title}
     >
       <BookOpen className="h-5 w-5" />
     </Button>
-  )
+  );
 }
 
 export interface DocSheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  doc?: DocItem
-  docKey?: string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  doc?: DocItem;
+  docKey?: string;
 }
 
 export function DocSheet({ open, onOpenChange, doc, docKey }: DocSheetProps) {
-  const activeDoc = doc || (docKey ? SYSTEM_DOCS[docKey] : undefined)
-  if (!activeDoc) return null
+  const activeDoc = doc || (docKey ? SYSTEM_DOCS[docKey] : undefined);
+  if (!activeDoc) return null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -141,7 +135,7 @@ export function DocSheet({ open, onOpenChange, doc, docKey }: DocSheetProps) {
         </SheetHeader>
 
         {activeDoc.sections.map((sec) => {
-          const SectionIcon = sec.icon || Sparkles
+          const SectionIcon = sec.icon || Sparkles;
           return (
             <div key={sec.number} className="space-y-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -150,7 +144,7 @@ export function DocSheet({ open, onOpenChange, doc, docKey }: DocSheetProps) {
               </h3>
               {sec.content}
             </div>
-          )
+          );
         })}
 
         {/* Footer Bantuan */}
@@ -159,7 +153,7 @@ export function DocSheet({ open, onOpenChange, doc, docKey }: DocSheetProps) {
             <HelpCircle className="h-5 w-5 text-emerald-600 shrink-0" />
             <p className="text-xs text-emerald-900">
               {activeDoc.contactNote ||
-                'Ada pertanyaan atau kendala operasional? Hubungi Bagian Administrasi Keuangan Pesantren Ar-Rahman.'}
+                "Ada pertanyaan atau kendala operasional? Hubungi Bagian Administrasi Keuangan Pesantren Ar-Rahman."}
             </p>
           </div>
           <div className="flex justify-end sm:justify-center">
@@ -177,30 +171,24 @@ export function DocSheet({ open, onOpenChange, doc, docKey }: DocSheetProps) {
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 export interface DocTriggerProps {
-  docKey?: string
-  doc?: DocItem
-  title?: string
-  className?: string
-  variant?: 'light' | 'dark'
+  docKey?: string;
+  doc?: DocItem;
+  title?: string;
+  className?: string;
+  variant?: "light" | "dark";
 }
 
-export function DocTrigger({
-  docKey,
-  doc,
-  title,
-  className,
-  variant = 'light',
-}: DocTriggerProps) {
-  const [open, setOpen] = React.useState(false)
-  const activeDoc = doc || (docKey ? SYSTEM_DOCS[docKey] : undefined)
+export function DocTrigger({ docKey, doc, title, className, variant = "light" }: DocTriggerProps) {
+  const [open, setOpen] = React.useState(false);
+  const activeDoc = doc || (docKey ? SYSTEM_DOCS[docKey] : undefined);
 
-  if (!activeDoc) return null
+  if (!activeDoc) return null;
 
-  const resolvedTitle = title || `Panduan & Cara Kerja ${activeDoc.title}`
+  const resolvedTitle = title || `Panduan & Cara Kerja ${activeDoc.title}`;
 
   return (
     <>
@@ -212,5 +200,5 @@ export function DocTrigger({
       />
       <DocSheet open={open} onOpenChange={setOpen} doc={activeDoc} />
     </>
-  )
+  );
 }

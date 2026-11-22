@@ -1,37 +1,37 @@
-"use client"
-import type { ReactNode } from "react"
-import { ChevronRight, Menu } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { DashboardProfileMenu } from "./dashboard-profile-menu"
-import { SemanticSearch } from "./semantic-search/semantic-search"
+"use client";
+import type { ReactNode } from "react";
+import { ChevronRight, Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { DashboardProfileMenu } from "./dashboard-profile-menu";
+import { SemanticSearch } from "./semantic-search/semantic-search";
 import type {
   DashboardLinkComponent,
   DashboardNavGroup,
   DashboardNavItem,
   DashboardUser,
-} from "./types"
+} from "./types";
 
 export interface DashboardHeaderProps {
-  user?: DashboardUser | null
-  roleLabel?: string
-  title?: string
-  subtitle?: string
-  breadcrumb?: ReactNode
-  onMobileMenu?: () => void
-  onProfile?: () => void
-  onViewSite?: () => void
-  showViewSite?: boolean
-  onLogout: () => void
-  profileLabel?: string
-  siteLabel?: string
-  logoutLabel?: string
-  right?: ReactNode
-  className?: string
-  navGroups?: DashboardNavGroup[]
-  onNavigate?: (item: DashboardNavItem) => void
-  renderLink?: DashboardLinkComponent
-  apiBase?: string
-  showSearch?: boolean
+  user?: DashboardUser | null;
+  roleLabel?: string;
+  title?: string;
+  subtitle?: string;
+  breadcrumb?: ReactNode;
+  onMobileMenu?: () => void;
+  onProfile?: () => void;
+  onViewSite?: () => void;
+  showViewSite?: boolean;
+  onLogout: () => void;
+  profileLabel?: string;
+  siteLabel?: string;
+  logoutLabel?: string;
+  right?: ReactNode;
+  className?: string;
+  navGroups?: DashboardNavGroup[];
+  onNavigate?: (item: DashboardNavItem) => void;
+  renderLink?: DashboardLinkComponent;
+  apiBase?: string;
+  showSearch?: boolean;
 }
 
 /**
@@ -68,10 +68,15 @@ export function DashboardHeader({
         {title && subtitle && <ChevronRight className="h-4 w-4 text-muted-foreground/30" />}
         {subtitle && <span className="text-muted-foreground">{subtitle}</span>}
       </>
-    ) : null)
+    ) : null);
 
   return (
-    <header className={cn("sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border", className)}>
+    <header
+      className={cn(
+        "sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between px-4 md:px-6 h-14">
         <div className="flex items-center gap-3">
           {onMobileMenu && (
@@ -111,5 +116,5 @@ export function DashboardHeader({
         </div>
       </div>
     </header>
-  )
+  );
 }

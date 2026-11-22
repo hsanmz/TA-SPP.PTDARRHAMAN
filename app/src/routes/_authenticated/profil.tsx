@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   AtSign,
@@ -54,30 +54,46 @@ function FieldLabel({ icon: Icon, children }: { icon: typeof Mail; children: Rea
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const { user, role, isAdmin } = useAuth();
+  const { user, role, isAdmin, loading } = useAuth();
   const [form, setForm] = useState({
-    username: user?.username || "",
-    full_name: user?.full_name || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
+    username: "",
+    full_name: "",
+    email: "",
+    phone: "",
     avatar_url: "",
     old_password: "",
     new_password: "",
     confirm_password: "",
   });
   const [saving, setSaving] = useState(false);
-  const [prevUserId, setPrevUserId] = useState(user?.id);
+  const [initialized, setInitialized] = useState(false);
 
-  // Sinkronkan form saat data user selesai dimuat async (pola render-phase PPDB)
-  if (user?.id !== prevUserId) {
-    setPrevUserId(user?.id);
-    setForm((f) => ({
-      ...f,
-      username: user?.username || "",
-      full_name: user?.full_name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-    }));
+  // Sinkronkan form saat user data selesai dimuat (async via useAuth)
+  useEffect(() => {
+    if (user && !initialized) {
+      setForm((f) => ({
+        ...f,
+        username: user.username || "",
+        full_name: user.full_name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      }));
+      setInitialized(true);
+    }
+  }, [user, initialized]);
+
+  // Tampilkan loading state saat user data belum dimuat
+  if (loading && !user) {
+    return (
+      <AppShell role="admin" title="Profile" user={null}>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-3 text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm">Memuat data profil...</p>
+          </div>
+        </div>
+      </AppShell>
+    );
   }
 
   const isSuper = role === "superadmin";
@@ -176,11 +192,16 @@ function ProfilePage() {
           </Button>
           <div>
             <h1 className="font-heading text-2xl font-bold text-foreground">Profile</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Kelola informasi dan keamanan akun Anda</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Kelola informasi dan keamanan akun Anda
+            </p>
           </div>
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-6 lg:grid-cols-[320px_1fr]">
+        <form
+          onSubmit={(e) => void handleSubmit(e)}
+          className="grid gap-6 lg:grid-cols-[320px_1fr]"
+        >
           {/* ── Left Column: Identity Card ── */}
           <aside className="space-y-6">
             <Card className="overflow-hidden shadow-sm">
@@ -248,7 +269,9 @@ function ProfilePage() {
                       disabled
                       className="bg-muted/40 cursor-not-allowed"
                     />
-                    <p className="text-[11px] text-muted-foreground">Username akun sistem tidak dapat diubah.</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Username akun sistem tidak dapat diubah.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <FieldLabel icon={UserRound}>Full Name</FieldLabel>
@@ -279,7 +302,8 @@ function ProfilePage() {
                     ) : (
                       <p className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                         <Lock className="h-3.5 w-3.5" />
-                        Email hanya dapat diubah oleh Superadmin. Hubungi admin bila perlu mengubahnya.
+                        Email hanya dapat diubah oleh Superadmin. Hubungi admin bila perlu
+                        mengubahnya.
                       </p>
                     )}
                   </div>
@@ -292,7 +316,9 @@ function ProfilePage() {
                       onChange={(e) => handleChange("phone", e.target.value)}
                       placeholder="08123456789"
                     />
-                    <p className="text-[11px] text-muted-foreground">Nomor aktif untuk notifikasi tagihan dan kuitansi.</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Nomor aktif untuk notifikasi tagihan dan kuitansi.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -350,7 +376,11 @@ function ProfilePage() {
                 Batal
               </Button>
               <Button type="submit" disabled={saving} className="w-full sm:w-auto">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 {saving ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>
             </div>

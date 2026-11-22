@@ -1,22 +1,22 @@
-import type { LucideIcon } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import type { LucideIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export interface BreakdownRow {
-  id: string
-  label: string
-  sub?: string
-  total: number
+  id: string;
+  label: string;
+  sub?: string;
+  total: number;
 }
 
 interface BreakdownCardProps {
-  title: string
-  description?: string
-  icon?: LucideIcon
-  rows: BreakdownRow[]
-  total?: number
-  emptyText?: string
-  className?: string
+  title: string;
+  description?: string;
+  icon?: LucideIcon;
+  rows: BreakdownRow[];
+  total?: number;
+  emptyText?: string;
+  className?: string;
 }
 
 /**
@@ -32,12 +32,14 @@ export default function BreakdownCard({
   emptyText = "Belum ada data rincian.",
   className,
 }: BreakdownCardProps) {
-  const sumTotal = rows.reduce((s, r) => s + r.total, 0)
-  const total = totalProp !== undefined ? totalProp : sumTotal
-  const sorted = [...rows].sort((a, b) => b.total - a.total)
+  const sumTotal = rows.reduce((s, r) => s + r.total, 0);
+  const total = totalProp !== undefined ? totalProp : sumTotal;
+  const sorted = [...rows].sort((a, b) => b.total - a.total);
 
   return (
-    <Card className={cn("flex flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}>
+    <Card
+      className={cn("flex flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}
+    >
       <CardHeader className="border-b border-slate-50 bg-slate-50/50 pb-4">
         <CardTitle className="flex items-center gap-2 text-base text-slate-900">
           {Icon && <Icon className="h-4 w-4 text-primary" />}
@@ -51,16 +53,14 @@ export default function BreakdownCard({
         ) : (
           <ul className="space-y-3.5">
             {sorted.map((r) => {
-              const pct = total > 0 ? Math.round((r.total / total) * 100) : 0
+              const pct = total > 0 ? Math.round((r.total / total) * 100) : 0;
               return (
                 <li key={r.id}>
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="truncate text-sm font-medium text-slate-700">
                       {r.label}
                       {r.sub && (
-                        <span className="ml-1.5 text-xs font-normal text-slate-400">
-                          {r.sub}
-                        </span>
+                        <span className="ml-1.5 text-xs font-normal text-slate-400">{r.sub}</span>
                       )}
                     </span>
                     <span className="shrink-0 text-sm">
@@ -75,11 +75,11 @@ export default function BreakdownCard({
                     />
                   </div>
                 </li>
-              )
+              );
             })}
           </ul>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

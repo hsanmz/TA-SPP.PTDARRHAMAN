@@ -76,11 +76,7 @@ export const saveStudent = createServerFn({ method: "POST" })
         .select({ id: students.id })
         .from(students)
         .where(
-          and(
-            eq(students.nis, values.nis),
-            ne(students.id, data.id),
-            isNull(students.deleted_at),
-          ),
+          and(eq(students.nis, values.nis), ne(students.id, data.id), isNull(students.deleted_at)),
         )
         .get();
       if (exists) throw new Error("NIS sudah dipakai siswa lain.");

@@ -1,21 +1,21 @@
-import type { LucideIcon } from "lucide-react"
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import type { LucideIcon } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export interface DonutItem {
-  label: string
-  value: number
-  color: string
+  label: string;
+  value: number;
+  color: string;
 }
 
 interface DonutCardProps {
-  title: string
-  description?: string
-  icon?: LucideIcon
-  items: DonutItem[]
-  emptyText?: string
-  className?: string
+  title: string;
+  description?: string;
+  icon?: LucideIcon;
+  items: DonutItem[];
+  emptyText?: string;
+  className?: string;
 }
 
 /**
@@ -30,11 +30,13 @@ export default function DonutCard({
   emptyText = "Belum ada data",
   className,
 }: DonutCardProps) {
-  const visible = items.filter((i) => i.value > 0)
-  const total = items.reduce((s, i) => s + i.value, 0)
+  const visible = items.filter((i) => i.value > 0);
+  const total = items.reduce((s, i) => s + i.value, 0);
 
   return (
-    <Card className={cn("flex flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}>
+    <Card
+      className={cn("flex flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}
+    >
       <CardHeader className="border-b border-slate-50 bg-slate-50/50 pb-4">
         <CardTitle className="flex items-center gap-2 text-base text-slate-900">
           {Icon && <Icon className="h-4 w-4 text-primary" />}
@@ -72,7 +74,10 @@ export default function DonutCard({
               {visible.map((i) => (
                 <li key={i.label} className="flex items-center justify-between text-sm">
                   <span className="inline-flex items-center gap-2 text-slate-600">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: i.color }} />
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: i.color }}
+                    />
                     {i.label}
                   </span>
                   <span className="font-semibold text-slate-800">{i.value}</span>
@@ -85,5 +90,5 @@ export default function DonutCard({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

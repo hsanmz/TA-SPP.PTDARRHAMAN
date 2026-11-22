@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useEffect, useState, type ReactNode } from "react"
-import { cn } from "@/lib/utils"
-import { DashboardHeader } from "./dashboard-header"
-import { DashboardSidebar } from "./dashboard-sidebar"
+import { useEffect, useState, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import { DashboardHeader } from "./dashboard-header";
+import { DashboardSidebar } from "./dashboard-sidebar";
 import type {
   DashboardBrand,
   DashboardLinkComponent,
   DashboardNavGroup,
   DashboardNavItem,
   DashboardUser,
-} from "./types"
+} from "./types";
 
 /**
  * Chrome dashboard yang dipakai bersama oleh 4 panel: companyprofile admin
@@ -18,57 +18,64 @@ import type {
  * packages/ui/src/components/dashboard/dashboard-shell.tsx di project-ppdb.
  */
 export interface DashboardShellProps {
-  brand: DashboardBrand
-  navGroups: DashboardNavGroup[]
-  user?: DashboardUser | null
-  renderLink?: DashboardLinkComponent
-  onNavigate?: (item: DashboardNavItem) => void
-  apiBase?: string
-  showSearch?: boolean
+  brand: DashboardBrand;
+  navGroups: DashboardNavGroup[];
+  user?: DashboardUser | null;
+  renderLink?: DashboardLinkComponent;
+  onNavigate?: (item: DashboardNavItem) => void;
+  apiBase?: string;
+  showSearch?: boolean;
 
-  title?: string
-  subtitle?: string
-  breadcrumb?: ReactNode
+  title?: string;
+  subtitle?: string;
+  breadcrumb?: ReactNode;
 
-  collapsed?: boolean
-  defaultCollapsed?: boolean
-  onCollapsedChange?: (v: boolean) => void
-  storageKey?: string
+  collapsed?: boolean;
+  defaultCollapsed?: boolean;
+  onCollapsedChange?: (v: boolean) => void;
+  storageKey?: string;
 
-  mobileOpen?: boolean
-  defaultMobileOpen?: boolean
-  onMobileOpenChange?: (v: boolean) => void
+  mobileOpen?: boolean;
+  defaultMobileOpen?: boolean;
+  onMobileOpenChange?: (v: boolean) => void;
 
-  roleLabel?: string
-  profileLabel?: string
-  siteLabel?: string
-  logoutLabel?: string
-  onProfile?: () => void
-  onViewSite?: () => void
-  showViewSite?: boolean
-  onLogout: () => void
+  roleLabel?: string;
+  profileLabel?: string;
+  siteLabel?: string;
+  logoutLabel?: string;
+  onProfile?: () => void;
+  onViewSite?: () => void;
+  showViewSite?: boolean;
+  onLogout: () => void;
 
-  sidebarFooter?: ReactNode
-  headerRight?: ReactNode
-  className?: string
-  contentClassName?: string
-  children: ReactNode
+  sidebarFooter?: ReactNode;
+  headerRight?: ReactNode;
+  className?: string;
+  contentClassName?: string;
+  children: ReactNode;
 }
 
-const DefaultLink: DashboardLinkComponent = ({ href, target, title, className, onClick, children }) => (
+const DefaultLink: DashboardLinkComponent = ({
+  href,
+  target,
+  title,
+  className,
+  onClick,
+  children,
+}) => (
   <a
     href={href ?? "#"}
     target={target}
     title={title}
     className={className}
     onClick={(e) => {
-      if (!href) e.preventDefault()
-      onClick?.(e)
+      if (!href) e.preventDefault();
+      onClick?.(e);
     }}
   >
     {children}
   </a>
-)
+);
 
 export function DashboardShell({
   brand,
@@ -102,31 +109,34 @@ export function DashboardShell({
   contentClassName,
   children,
 }: DashboardShellProps) {
-  const [collapsedState, setCollapsedState] = useState(defaultCollapsed)
-  const [mobileState, setMobileState] = useState(defaultMobileOpen)
+  const [collapsedState, setCollapsedState] = useState(defaultCollapsed);
+  const [mobileState, setMobileState] = useState(defaultMobileOpen);
 
-  const collapsed = collapsedProp ?? collapsedState
-  const mobileOpen = mobileOpenProp ?? mobileState
+  const collapsed = collapsedProp ?? collapsedState;
+  const mobileOpen = mobileOpenProp ?? mobileState;
 
   const setCollapsed = (v: boolean) => {
-    setCollapsedState(v)
-    onCollapsedChange?.(v)
-  }
+    setCollapsedState(v);
+    onCollapsedChange?.(v);
+  };
   const setMobileOpen = (v: boolean) => {
-    setMobileState(v)
-    onMobileOpenChange?.(v)
-  }
+    setMobileState(v);
+    onMobileOpenChange?.(v);
+  };
 
   useEffect(() => {
-    if (!storageKey) return
-    const saved = localStorage.getItem(storageKey)
-    if (saved !== null) setCollapsedState(saved === "true")
-  }, [storageKey])
+    if (!storageKey) return;
+    const saved = localStorage.getItem(storageKey);
+    if (saved !== null) setCollapsedState(saved === "true");
+  }, [storageKey]);
 
   return (
     <div className={cn("min-h-dvh bg-background flex", className)}>
       {mobileOpen && (
-        <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
 
       <DashboardSidebar
@@ -134,8 +144,8 @@ export function DashboardShell({
         navGroups={navGroups}
         collapsed={collapsed}
         onCollapsedChange={(v) => {
-          setCollapsed(v)
-          if (storageKey) localStorage.setItem(storageKey, String(v))
+          setCollapsed(v);
+          if (storageKey) localStorage.setItem(storageKey, String(v));
         }}
         mobileOpen={mobileOpen}
         onMobileOpenChange={setMobileOpen}
@@ -166,8 +176,10 @@ export function DashboardShell({
           apiBase={apiBase}
           showSearch={showSearch}
         />
-        <main className={cn("flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto", contentClassName)}>{children}</main>
+        <main className={cn("flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto", contentClassName)}>
+          {children}
+        </main>
       </div>
     </div>
-  )
+  );
 }

@@ -3,11 +3,20 @@ let globalEnv: Record<string, unknown> | undefined;
 export function setServerEnv(env: unknown) {
   if (env && typeof env === "object") {
     globalEnv = env as Record<string, unknown>;
+    const envRecord = env as Record<string, unknown>;
+    if (envRecord["DB"]) {
+      (globalThis as unknown as Record<string, unknown>)["DB"] = envRecord["DB"];
+    }
+    if (envRecord["DB_STORAGE"]) {
+      (globalThis as unknown as Record<string, unknown>)["DB_STORAGE"] = envRecord["DB_STORAGE"];
+    }
   }
 }
 
 export function getServerEnv(): Record<string, unknown> | undefined {
-  return globalEnv;
+  const g = globalThis as unknown as Record<string, unknown>;
+  const envObj = g["__env__"] as Record<string, unknown> | undefined;
+  return globalEnv ?? envObj;
 }
 
 export interface D1DatabaseLike {
@@ -20,9 +29,20 @@ export interface D1DatabaseLike {
   };
 }
 
+export function getD1Database(): D1DatabaseLike | null {
+  const env = getServerEnv();
+  const d1 = (env?.["DB"] ?? (globalThis as unknown as Record<string, unknown>)["DB"]) as
+    D1DatabaseLike | undefined;
+  if (d1 && typeof d1.prepare === "function") {
+    return d1;
+  }
+  return null;
+}
+
 export function getD1Storage(): D1DatabaseLike | null {
   const env = getServerEnv();
-  const d1 = (env?.["DB_STORAGE"] ?? (globalThis as unknown as Record<string, unknown>)["DB_STORAGE"]) as D1DatabaseLike | undefined;
+  const d1 = (env?.["DB_STORAGE"] ??
+    (globalThis as unknown as Record<string, unknown>)["DB_STORAGE"]) as D1DatabaseLike | undefined;
   if (d1 && typeof d1.prepare === "function") {
     return d1;
   }
@@ -34,7 +54,9 @@ export function getD1Storage(): D1DatabaseLike | null {
  * Jika D1 belum terhubung (misal saat run dev lokal), mengembalikan dataUrl langsung sebagai fallback.
  * Mengembalikan relative URL: "/api/proofs/{id}" atau dataUrl.
  */
-export async function persistProof(dataUrlOrUrl: string | null | undefined): Promise<string | null> {
+export async function persistProof(
+  dataUrlOrUrl: string | null | undefined,
+): Promise<string | null> {
   if (!dataUrlOrUrl) return null;
   // Jika sudah berupa URL biasa, tidak perlu diapa-apakan
   if (!dataUrlOrUrl.startsWith("data:image/")) {

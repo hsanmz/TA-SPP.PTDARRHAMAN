@@ -230,7 +230,12 @@ function SiswaDetail() {
             {
               icon: UserCheck,
               label: "Status Santri",
-              value: s.status === "active" ? "Aktif Belajar" : s.status === "graduated" ? "Alumni" : "Nonaktif",
+              value:
+                s.status === "active"
+                  ? "Aktif Belajar"
+                  : s.status === "graduated"
+                    ? "Alumni"
+                    : "Nonaktif",
               active: s.status === "active",
               pulse: s.status === "active",
             },
@@ -240,8 +245,16 @@ function SiswaDetail() {
         {/* Info Grid Cards */}
         <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            { label: "Kelas Akademik", value: s.class_name ? `Kelas ${s.class_name}` : "—", icon: School },
-            { label: "Tingkat Pendidikan", value: s.grade_level ? `Tingkat ${s.grade_level}` : "—", icon: GraduationCap },
+            {
+              label: "Kelas Akademik",
+              value: s.class_name ? `Kelas ${s.class_name}` : "—",
+              icon: School,
+            },
+            {
+              label: "Tingkat Pendidikan",
+              value: s.grade_level ? `Tingkat ${s.grade_level}` : "—",
+              icon: GraduationCap,
+            },
             { label: "Tahun Angkatan", value: s.cohort || "—", icon: CalendarDays },
             {
               label: "Jenis Kelamin",
@@ -252,10 +265,15 @@ function SiswaDetail() {
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <Card key={item.label} className="rounded-2xl border-slate-100 bg-white p-4 shadow-sm">
+              <Card
+                key={item.label}
+                className="rounded-2xl border-slate-100 bg-white p-4 shadow-sm"
+              >
                 <div className="flex items-center gap-2 text-slate-500 mb-1">
                   <Icon className="h-4 w-4 text-emerald-primary" />
-                  <span className="text-[11px] font-medium uppercase tracking-wide">{item.label}</span>
+                  <span className="text-[11px] font-medium uppercase tracking-wide">
+                    {item.label}
+                  </span>
                 </div>
                 <p className="truncate text-sm font-bold text-slate-900">{item.value}</p>
               </Card>

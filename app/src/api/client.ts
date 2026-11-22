@@ -1,7 +1,5 @@
 export const API_BASE = (
-  typeof process !== "undefined" && process.env?.["VITE_API_URL"]
-    ? process.env["VITE_API_URL"]
-    : ""
+  typeof process !== "undefined" && process.env?.["VITE_API_URL"] ? process.env["VITE_API_URL"] : ""
 ).replace(/\/+$/, "");
 
 export class ApiError extends Error {

@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { ChevronDown, ExternalLink, Globe, LogOut, User as UserIcon } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ChevronDown, ExternalLink, Globe, LogOut, User as UserIcon } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import type { DashboardUser } from "./types"
+} from "@/components/ui/dropdown-menu";
+import type { DashboardUser } from "./types";
 
 export interface DashboardProfileMenuProps {
-  user?: DashboardUser | null
-  roleLabel?: string
-  profileLabel?: string
-  siteLabel?: string
-  logoutLabel?: string
-  onProfile?: () => void
-  onViewSite?: () => void
-  showViewSite?: boolean
-  onLogout: () => void
+  user?: DashboardUser | null;
+  roleLabel?: string;
+  profileLabel?: string;
+  siteLabel?: string;
+  logoutLabel?: string;
+  onProfile?: () => void;
+  onViewSite?: () => void;
+  showViewSite?: boolean;
+  onLogout: () => void;
 }
 
 /**
@@ -38,9 +38,9 @@ export function DashboardProfileMenu({
   showViewSite = true,
   onLogout,
 }: DashboardProfileMenuProps) {
-  const name = user?.fullName || user?.username || "Admin"
-  const initial = name[0]?.toUpperCase() || "A"
-  const role = roleLabel || user?.role || "Admin"
+  const name = user?.fullName || user?.username || "Admin";
+  const initial = name[0]?.toUpperCase() || "A";
+  const role = roleLabel || user?.role || "Admin";
 
   return (
     <DropdownMenu>
@@ -73,7 +73,9 @@ export function DashboardProfileMenu({
             </Avatar>
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-foreground leading-tight">{name}</p>
-              <p className="truncate text-xs text-muted-foreground">{user?.email || (user?.username ? `@${user.username}` : "")}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {user?.email || (user?.username ? `@${user.username}` : "")}
+              </p>
             </div>
           </div>
           <div className="mt-2.5 flex items-center gap-1.5">
@@ -85,13 +87,19 @@ export function DashboardProfileMenu({
         </div>
 
         {onProfile && (
-          <DropdownMenuItem className="cursor-pointer rounded-lg px-2.5 py-2" onSelect={() => onProfile()}>
+          <DropdownMenuItem
+            className="cursor-pointer rounded-lg px-2.5 py-2"
+            onSelect={() => onProfile()}
+          >
             <UserIcon className="h-4 w-4 text-emerald-primary" />
             <span>{profileLabel}</span>
           </DropdownMenuItem>
         )}
         {showViewSite && onViewSite && (
-          <DropdownMenuItem className="cursor-pointer rounded-lg px-2.5 py-2" onSelect={() => onViewSite()}>
+          <DropdownMenuItem
+            className="cursor-pointer rounded-lg px-2.5 py-2"
+            onSelect={() => onViewSite()}
+          >
             <Globe className="h-4 w-4 text-emerald-primary" />
             <span>{siteLabel}</span>
             <ExternalLink className="ml-auto h-3.5 w-3.5 text-muted-foreground/50" />
@@ -109,5 +117,5 @@ export function DashboardProfileMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

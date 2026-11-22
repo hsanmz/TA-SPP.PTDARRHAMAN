@@ -5,7 +5,12 @@ import { toast } from "sonner";
 import { KeyRound, Plus, Shield, ShieldCheck, UserCog, UserMinus, Users } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/lib/useAuth";
-import { createAdminUser, removeAdminUser, resetAdminPassword } from "@/lib/auth-functions";
+import {
+  createAdminUser,
+  removeAdminUser,
+  resetAdminPassword,
+  toggleStaffActive,
+} from "@/lib/auth-functions";
 import { listStaff } from "@/lib/api/staff";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +31,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import PageHero from "@/components/shared/PageHero";
 import ToolbarCard from "@/components/shared/ToolbarCard";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/pengguna")({
   ssr: false,
@@ -47,6 +53,7 @@ type StaffWithProfile = {
   role: "superadmin" | "admin";
   username: string | null;
   full_name: string | null;
+  is_active?: boolean;
 };
 
 function Pengguna() {
@@ -56,7 +63,12 @@ function Pengguna() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ username: "", full_name: "", password: "" });
 
-  const { data: staff = [], isPending, refetch, isFetching } = useQuery<StaffWithProfile[]>({
+  const {
+    data: staff = [],
+    isPending,
+    refetch,
+    isFetching,
+  } = useQuery<StaffWithProfile[]>({
     queryKey: ["staff-users"],
     queryFn: () => listStaff(),
   });
@@ -99,6 +111,16 @@ function Pengguna() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const handleToggleStaff = async (userId: string, active: boolean) => {
+    try {
+      await toggleStaffActive({ data: { userId, active } });
+      toast.success(active ? "Akun staf diaktifkan" : "Akun staf dinonaktifkan");
+      void qc.invalidateQueries({ queryKey: ["staff-users"] });
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal mengubah status staf");
+    }
+  };
 
   if (role && role !== "superadmin") {
     return (
@@ -178,10 +200,18 @@ function Pengguna() {
                 <Table>
                   <TableHeader className="bg-emerald-primary/5 border-b border-slate-100 [&_tr]:border-slate-200">
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 w-[320px]">Staf / Pengguna</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">Username</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">Peran Akses</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right">Aksi</TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 w-[320px]">
+                        Staf / Pengguna
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Username
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Peran Akses
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right">
+                        Aksi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="divide-y divide-slate-100">
@@ -189,7 +219,10 @@ function Pengguna() {
                       const initials = (s.full_name ?? s.username ?? "?").slice(0, 2).toUpperCase();
                       const isSuperadmin = s.role === "superadmin";
                       return (
-                        <TableRow key={`${s.user_id}-${s.role}`} className="hover:bg-slate-50/80 cursor-pointer transition-colors group">
+                        <TableRow
+                          key={`${s.user_id}-${s.role}`}
+                          className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                        >
                           <TableCell className="py-3 px-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="h-10 w-10 text-xs">
@@ -198,8 +231,12 @@ function Pengguna() {
                                 </AvatarFallback>
                               </Avatar>
                               <div className="min-w-0">
-                                <p className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">{s.full_name || "—"}</p>
-                                <p className="text-[11px] text-slate-400">ID: {s.user_id.slice(0, 8)}...</p>
+                                <p className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                                  {s.full_name || "—"}
+                                </p>
+                                <p className="text-[11px] text-slate-400">
+                                  ID: {s.user_id.slice(0, 8)}...
+                                </p>
                               </div>
                             </div>
                           </TableCell>
@@ -214,14 +251,43 @@ function Pengguna() {
                                 <ShieldCheck className="h-3 w-3" /> Superadmin
                               </Badge>
                             ) : (
-                              <Badge variant="success" className="gap-1 rounded-full px-2.5 py-0.5">
-                                <Shield className="h-3 w-3" /> Admin
-                              </Badge>
+                              <div className="flex items-center gap-1.5">
+                                <Badge
+                                  variant="success"
+                                  className="gap-1 rounded-full px-2.5 py-0.5"
+                                >
+                                  <Shield className="h-3 w-3" /> Admin
+                                </Badge>
+                                {s.is_active === false ? (
+                                  <Badge className="border-rose-200 bg-rose-50 text-rose-700 rounded-full text-[10px] px-2 py-0.5">
+                                    Nonaktif
+                                  </Badge>
+                                ) : (
+                                  <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 rounded-full text-[10px] px-2 py-0.5">
+                                    Aktif
+                                  </Badge>
+                                )}
+                              </div>
                             )}
                           </TableCell>
                           <TableCell className="py-3 px-4 text-right">
                             {!isSuperadmin ? (
                               <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={cn(
+                                    "h-8 gap-1 px-2.5 text-xs rounded-lg",
+                                    s.is_active === false
+                                      ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                      : "border-slate-200 text-slate-600 hover:bg-slate-50",
+                                  )}
+                                  onClick={() =>
+                                    void handleToggleStaff(s.user_id, s.is_active === false)
+                                  }
+                                >
+                                  {s.is_active === false ? "Aktifkan" : "Nonaktifkan"}
+                                </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -250,7 +316,9 @@ function Pengguna() {
                                 </Button>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic pr-2">Akses Utama</span>
+                              <span className="text-xs text-slate-400 italic pr-2">
+                                Akses Utama
+                              </span>
                             )}
                           </TableCell>
                         </TableRow>
@@ -275,12 +343,16 @@ function Pengguna() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="font-semibold text-slate-900 truncate">{s.full_name || "—"}</p>
+                            <p className="font-semibold text-slate-900 truncate">
+                              {s.full_name || "—"}
+                            </p>
                             <p className="font-mono text-xs text-slate-500">@{s.username || "—"}</p>
                           </div>
                         </div>
                         {isSuperadmin ? (
-                          <Badge className="border-purple-200 bg-purple-50 text-purple-700">SA</Badge>
+                          <Badge className="border-purple-200 bg-purple-50 text-purple-700">
+                            SA
+                          </Badge>
                         ) : (
                           <Badge variant="success">Admin</Badge>
                         )}
@@ -343,7 +415,9 @@ function Pengguna() {
       >
         <div className="grid gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="sa-name" className="text-xs">Nama Lengkap Staf</Label>
+            <Label htmlFor="sa-name" className="text-xs">
+              Nama Lengkap Staf
+            </Label>
             <Input
               id="sa-name"
               placeholder="Contoh: Ahmad Fauzi, S.Pd"
@@ -353,7 +427,9 @@ function Pengguna() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sa-username" className="text-xs">Username (huruf kecil & angka)</Label>
+            <Label htmlFor="sa-username" className="text-xs">
+              Username (huruf kecil & angka)
+            </Label>
             <Input
               id="sa-username"
               placeholder="contoh: ahmadfauzi"
@@ -367,7 +443,9 @@ function Pengguna() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sa-password" className="text-xs">Kata Sandi Awal</Label>
+            <Label htmlFor="sa-password" className="text-xs">
+              Kata Sandi Awal
+            </Label>
             <Input
               id="sa-password"
               type="password"
@@ -406,7 +484,9 @@ function Pengguna() {
         }
       >
         <div className="space-y-1.5">
-          <Label htmlFor="reset-password" className="text-xs">Kata Sandi Baru</Label>
+          <Label htmlFor="reset-password" className="text-xs">
+            Kata Sandi Baru
+          </Label>
           <Input
             id="reset-password"
             type="password"
@@ -415,7 +495,9 @@ function Pengguna() {
             minLength={6}
             onChange={(e) => setResetTarget((t) => (t ? { ...t, password: e.target.value } : t))}
           />
-          <p className="text-xs text-muted-foreground">User akan masuk menggunakan kata sandi baru ini.</p>
+          <p className="text-xs text-muted-foreground">
+            User akan masuk menggunakan kata sandi baru ini.
+          </p>
         </div>
       </Modal>
 

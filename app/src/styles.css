@@ -217,18 +217,18 @@
   --ring: 153 61% 26%; /* emerald focus ring */
 
   /* Whole-color aliases for color-mix() consumers */
-  --bg: #F7F5F0;
-  --bg-secondary: #EFEDE8;
-  --bg-elevated: #FFFFFF;
-  --color-ivory: #F7F5F0;
-  --color-ivory-dark: #EFEDE8;
-  --color-emerald: #1A6B47;
+  --bg: #f7f5f0;
+  --bg-secondary: #efede8;
+  --bg-elevated: #ffffff;
+  --color-ivory: #f7f5f0;
+  --color-ivory-dark: #efede8;
+  --color-emerald: #1a6b47;
   --color-emerald-subtle: rgba(26, 107, 71, 0.08);
   --accent-subtle: rgba(26, 107, 71, 0.08);
-  --color-gold: #D4A853;
-  --color-gold-accent: #D4A853;
+  --color-gold: #d4a853;
+  --color-gold-accent: #d4a853;
   --color-gold-subtle: rgba(212, 168, 83, 0.12);
-  --accent-gold: #D4A853;
+  --accent-gold: #d4a853;
 
   --hero-col-width: min(56rem, 92vw);
   --hero-edge: calc(var(--hero-col-width) / 2);
@@ -238,11 +238,11 @@
 
 /* Subtle Background Patterns from project-ppdb */
 .bg-pattern-dots {
-  background-image: radial-gradient(circle, var(--color-emerald, #1A6B47) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--color-emerald, #1a6b47) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .bg-pattern-dots-gold {
-  background-image: radial-gradient(circle, var(--color-gold, #D4A853) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--color-gold, #d4a853) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -258,7 +258,12 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: "Inter", "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      "Inter",
+      "DM Sans",
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
@@ -359,7 +364,10 @@
     border-color: color-mix(in srgb, #ffffff 80%, transparent);
     border-radius: var(--radius-2xl);
     transition-property: all;
-    transition-timing-function: var(--default-transition-timing-function, cubic-bezier(0.4, 0, 0.2, 1));
+    transition-timing-function: var(
+      --default-transition-timing-function,
+      cubic-bezier(0.4, 0, 0.2, 1)
+    );
     transition-duration: 300ms;
     cursor: pointer;
   }
@@ -636,7 +644,14 @@
   max-height: 297mm !important;
   background-color: #ffffff;
   color: #0f172a;
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif !important;
   overflow: hidden;
   position: relative;
 }
@@ -651,7 +666,14 @@
   max-height: 210mm !important;
   overflow: hidden;
   position: relative;
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif !important;
 }
 
 /* Hindari pewarisan font serif (Playfair Display) dari h1..h6 global di dalam dokumen resmi */
@@ -667,7 +689,14 @@
 .a4-document-page-landscape h4,
 .a4-document-page-landscape h5,
 .a4-document-page-landscape h6 {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif !important;
   letter-spacing: normal !important;
 }
 

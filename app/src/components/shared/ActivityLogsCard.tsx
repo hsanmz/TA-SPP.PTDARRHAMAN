@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router"
-import type { LucideIcon } from "lucide-react"
+import { Link } from "@tanstack/react-router";
+import type { LucideIcon } from "lucide-react";
 import {
   Activity,
   ChevronRight,
@@ -9,17 +9,17 @@ import {
   Settings,
   Shield,
   UserRound,
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export interface AuditLogItem {
-  id: string
-  action: string
-  entity_type: string
-  user_username?: string
-  created_at: string
+  id: string;
+  action: string;
+  entity_type: string;
+  user_username?: string;
+  created_at: string;
 }
 
 const ENTITY_ICONS: [string, { icon: LucideIcon; chip: string; iconCls: string }][] = [
@@ -31,37 +31,37 @@ const ENTITY_ICONS: [string, { icon: LucideIcon; chip: string; iconCls: string }
   ["siswa", { icon: GraduationCap, chip: "bg-blue-50", iconCls: "text-blue-600" }],
   ["user", { icon: UserRound, chip: "bg-indigo-50", iconCls: "text-indigo-600" }],
   ["role", { icon: Shield, chip: "bg-purple-50", iconCls: "text-purple-600" }],
-]
+];
 
 function getEntityMeta(entity: string) {
-  const key = (entity || "").toLowerCase()
+  const key = (entity || "").toLowerCase();
   for (const [token, meta] of ENTITY_ICONS) {
-    if (key.includes(token)) return meta
+    if (key.includes(token)) return meta;
   }
-  return { icon: Settings, chip: "bg-slate-100", iconCls: "text-slate-500" }
+  return { icon: Settings, chip: "bg-slate-100", iconCls: "text-slate-500" };
 }
 
 function formatDateTime(dateString: string) {
   try {
-    const d = new Date(dateString)
+    const d = new Date(dateString);
     return d.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
+    });
   } catch {
-    return dateString
+    return dateString;
   }
 }
 
 interface ActivityLogsCardProps {
-  logs?: AuditLogItem[]
-  loading?: boolean
-  manageLink?: string
-  manageLabel?: string
-  className?: string
+  logs?: AuditLogItem[];
+  loading?: boolean;
+  manageLink?: string;
+  manageLabel?: string;
+  className?: string;
 }
 
 /**
@@ -76,7 +76,9 @@ export default function ActivityLogsCard({
   className,
 }: ActivityLogsCardProps) {
   return (
-    <Card className={cn("flex flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}>
+    <Card
+      className={cn("flex flex-col rounded-2xl border-slate-100 bg-white shadow-sm", className)}
+    >
       <CardHeader className="border-b border-slate-50 bg-slate-50/50 pb-4">
         <CardTitle className="flex items-center gap-2 text-base text-slate-900">
           <Activity className="h-4 w-4 text-primary" />
@@ -99,8 +101,8 @@ export default function ActivityLogsCard({
         ) : logs.length > 0 ? (
           <div className="divide-y divide-slate-100">
             {logs.map((log) => {
-              const meta = getEntityMeta(log.entity_type)
-              const Icon = meta.icon
+              const meta = getEntityMeta(log.entity_type);
+              const Icon = meta.icon;
               return (
                 <div
                   key={log.id}
@@ -119,14 +121,13 @@ export default function ActivityLogsCard({
                       <span className="font-semibold text-slate-900">
                         {log.user_username || "Sistem"}
                       </span>{" "}
-                      melakukan{" "}
-                      <span className="font-medium text-primary">{log.action}</span> pada{" "}
+                      melakukan <span className="font-medium text-primary">{log.action}</span> pada{" "}
                       <span className="font-medium">{log.entity_type}</span>
                     </p>
                     <p className="mt-1 text-xs text-slate-400">{formatDateTime(log.created_at)}</p>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         ) : (
@@ -146,5 +147,5 @@ export default function ActivityLogsCard({
         </div>
       )}
     </Card>
-  )
+  );
 }

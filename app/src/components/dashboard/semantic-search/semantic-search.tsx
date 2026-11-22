@@ -1,14 +1,7 @@
-"use client"
+"use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentType,
-} from "react"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Search,
   Sparkles,
@@ -26,23 +19,28 @@ import {
   BookOpen,
   Trophy,
   CornerDownLeft,
-} from "lucide-react"
-import { cn } from "../../../lib/utils"
-import type { DashboardNavGroup, DashboardNavItem, DashboardUser } from "../types"
+} from "lucide-react";
+import { cn } from "../../../lib/utils";
+import type {
+  DashboardNavGroup,
+  DashboardNavItem,
+  DashboardUser,
+  DashboardLinkComponent,
+} from "../types";
 import {
   buildLocalSemanticIndex,
   fetchLiveSemanticResults,
   searchSemanticCatalog,
   type SemanticSearchItem,
-} from "./semantic-engine"
+} from "./semantic-engine";
 
 export interface SemanticSearchProps {
-  navGroups?: DashboardNavGroup[]
-  user?: DashboardUser | null
-  apiBase?: string
-  onNavigate?: (item: DashboardNavItem) => void
-  renderLink?: ComponentType<any>
-  className?: string
+  navGroups?: DashboardNavGroup[];
+  user?: DashboardUser | null;
+  apiBase?: string;
+  onNavigate?: (item: DashboardNavItem) => void;
+  renderLink?: DashboardLinkComponent;
+  className?: string;
 }
 
 const CATEGORY_ICONS: Record<string, ComponentType<{ className?: string }>> = {
@@ -59,25 +57,31 @@ const CATEGORY_ICONS: Record<string, ComponentType<{ className?: string }>> = {
   "Hak Akses": Shield,
   "Periode PPDB": Calendar,
   Lainnya: FileText,
-}
+};
 
 const CATEGORY_COLORS: Record<string, string> = {
   Navigasi: "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border-blue-200/50",
   Aksi: "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 border-amber-200/50",
-  Pendaftar: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border-emerald-200/50",
-  Pengguna: "bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 border-purple-200/50",
-  "Konten CMS": "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-200/50",
-  Konten: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-200/50",
+  Pendaftar:
+    "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border-emerald-200/50",
+  Pengguna:
+    "bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 border-purple-200/50",
+  "Konten CMS":
+    "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-200/50",
+  Konten:
+    "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-200/50",
   Fasilitas: "bg-cyan-50 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400 border-cyan-200/50",
   Pengajar: "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border-rose-200/50",
   Program: "bg-teal-50 text-teal-600 dark:bg-teal-950/50 dark:text-teal-400 border-teal-200/50",
-  Prestasi: "bg-yellow-50 text-yellow-600 dark:bg-yellow-950/50 dark:text-yellow-400 border-yellow-200/50",
-  "Hak Akses": "bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400 border-violet-200/50",
+  Prestasi:
+    "bg-yellow-50 text-yellow-600 dark:bg-yellow-950/50 dark:text-yellow-400 border-yellow-200/50",
+  "Hak Akses":
+    "bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400 border-violet-200/50",
   "Periode PPDB": "bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 border-sky-200/50",
   Lainnya: "bg-gray-50 text-gray-600 dark:bg-gray-950/50 dark:text-gray-400 border-gray-200/50",
-}
+};
 
-const RECENT_KEY = "ptd_recent_searches"
+const RECENT_KEY = "ptd_recent_searches";
 
 export function SemanticSearch({
   navGroups = [],
@@ -86,144 +90,157 @@ export function SemanticSearch({
   onNavigate,
   className,
 }: SemanticSearchProps) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState("")
-  const [selectedFilter, setSelectedFilter] = useState("Semua")
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
-  const [serverResults, setServerResults] = useState<SemanticSearchItem[]>([])
-  const [isLoadingServer, setIsLoadingServer] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("Semua");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [serverResults, setServerResults] = useState<SemanticSearchItem[]>([]);
+  const [isLoadingServer, setIsLoadingServer] = useState(false);
 
-  const inputRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Deteksi Mac OS untuk label shortcut
-  const isMac = typeof window !== "undefined" && /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent)
+  const isMac =
+    typeof window !== "undefined" && /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent);
 
   // Bangun katalog navigasi & aksi lokal sekali atau saat navGroups berubah
-  const localCatalog = useMemo(() => buildLocalSemanticIndex(navGroups), [navGroups])
+  const localCatalog = useMemo(() => buildLocalSemanticIndex(navGroups), [navGroups]);
 
   // Muat riwayat pencarian dari localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(RECENT_KEY)
-      if (stored) setRecentSearches(JSON.parse(stored))
-    } catch {}
-  }, [])
+      const stored = localStorage.getItem(RECENT_KEY);
+      if (stored) setRecentSearches(JSON.parse(stored));
+    } catch {
+      // ignore localStorage errors
+    }
+  }, []);
 
   const saveRecentSearch = useCallback((term: string) => {
-    const trimmed = term.trim()
-    if (!trimmed || trimmed.length < 2) return
+    const trimmed = term.trim();
+    if (!trimmed || trimmed.length < 2) return;
     setRecentSearches((prev) => {
-      const updated = [trimmed, ...prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase())].slice(0, 5)
+      const updated = [
+        trimmed,
+        ...prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase()),
+      ].slice(0, 5);
       try {
-        localStorage.setItem(RECENT_KEY, JSON.stringify(updated))
-      } catch {}
-      return updated
-    })
-  }, [])
+        localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore localStorage errors
+      }
+      return updated;
+    });
+  }, []);
 
   const removeRecentSearch = useCallback((e: React.MouseEvent, term: string) => {
-    e.stopPropagation()
+    e.stopPropagation();
     setRecentSearches((prev) => {
-      const updated = prev.filter((item) => item !== term)
+      const updated = prev.filter((item) => item !== term);
       try {
-        localStorage.setItem(RECENT_KEY, JSON.stringify(updated))
-      } catch {}
-      return updated
-    })
-  }, [])
+        localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore localStorage errors
+      }
+      return updated;
+    });
+  }, []);
 
   // Global Keyboard Shortcut: Ctrl+K / Cmd+K
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault()
-        setOpen((v) => !v)
+        e.preventDefault();
+        setOpen((v) => !v);
       }
     }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Auto-focus input saat modal terbuka
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50)
-      setSelectedIndex(0)
+      setTimeout(() => inputRef.current?.focus(), 50);
+      setSelectedIndex(0);
     } else {
-      setQuery("")
-      setServerResults([])
+      setQuery("");
+      setServerResults([]);
     }
-  }, [open])
+  }, [open]);
 
   // Pencarian Semantik Klien Seketika (Zero-lag)
   const localResults = useMemo(() => {
-    if (!query.trim()) return []
-    return searchSemanticCatalog(query, localCatalog)
-  }, [query, localCatalog])
+    if (!query.trim()) return [];
+    return searchSemanticCatalog(query, localCatalog);
+  }, [query, localCatalog]);
 
   // Debounced Query ke Backend Semantic Search (/search/semantic)
   useEffect(() => {
-    const cleanQ = query.trim()
+    const cleanQ = query.trim();
     if (cleanQ.length < 2) {
-      setServerResults([])
-      setIsLoadingServer(false)
-      return
+      setServerResults([]);
+      setIsLoadingServer(false);
+      return;
     }
 
-    setIsLoadingServer(true)
+    setIsLoadingServer(true);
     const timer = setTimeout(async () => {
-      const res = await fetchLiveSemanticResults(cleanQ, apiBase)
-      setServerResults(res)
-      setIsLoadingServer(false)
-    }, 220)
+      const res = await fetchLiveSemanticResults(cleanQ, apiBase);
+      setServerResults(res);
+      setIsLoadingServer(false);
+    }, 220);
 
-    return () => clearTimeout(timer)
-  }, [query, apiBase])
+    return () => clearTimeout(timer);
+  }, [query, apiBase]);
 
   // Gabungkan hasil klien dan server, deduplikasi berdasarkan url/title
   const combinedResults = useMemo(() => {
-    const seen = new Set<string>()
-    const merged: SemanticSearchItem[] = []
+    const seen = new Set<string>();
+    const merged: SemanticSearchItem[] = [];
 
     for (const item of [...localResults, ...serverResults]) {
-      const key = `${item.title.toLowerCase()}-${item.url || item.id}`
+      const key = `${item.title.toLowerCase()}-${item.url || item.id}`;
       if (!seen.has(key)) {
-        seen.add(key)
-        merged.push(item)
+        seen.add(key);
+        merged.push(item);
       }
     }
 
     // Filter kategori jika tab spesifik dipilih
     if (selectedFilter !== "Semua") {
       return merged.filter((item) => {
-        if (selectedFilter === "Navigasi") return item.category === "Navigasi"
-        if (selectedFilter === "Aksi") return item.category === "Aksi"
-        if (selectedFilter === "Pendaftar") return item.category === "Pendaftar"
-        if (selectedFilter === "Pengguna") return item.category === "Pengguna"
-        if (selectedFilter === "Konten") return ["Konten", "Konten CMS", "Fasilitas", "Pengajar", "Program", "Prestasi"].includes(item.category)
-        return true
-      })
+        if (selectedFilter === "Navigasi") return item.category === "Navigasi";
+        if (selectedFilter === "Aksi") return item.category === "Aksi";
+        if (selectedFilter === "Pendaftar") return item.category === "Pendaftar";
+        if (selectedFilter === "Pengguna") return item.category === "Pengguna";
+        if (selectedFilter === "Konten")
+          return ["Konten", "Konten CMS", "Fasilitas", "Pengajar", "Program", "Prestasi"].includes(
+            item.category,
+          );
+        return true;
+      });
     }
 
-    return merged
-  }, [localResults, serverResults, selectedFilter])
+    return merged;
+  }, [localResults, serverResults, selectedFilter]);
 
   // Reset selected index saat query atau filter berganti
   useEffect(() => {
-    setSelectedIndex(0)
-  }, [query, selectedFilter])
+    setSelectedIndex(0);
+  }, [query, selectedFilter]);
 
   // Eksekusi pemilihan item
   const handleSelectItem = useCallback(
     (item: SemanticSearchItem) => {
-      if (query.trim()) saveRecentSearch(query.trim())
-      setOpen(false)
+      if (query.trim()) saveRecentSearch(query.trim());
+      setOpen(false);
 
       if (item.onClick) {
-        item.onClick()
-        return
+        item.onClick();
+        return;
       }
 
       if (item.url) {
@@ -232,47 +249,47 @@ export function SemanticSearch({
             key: item.id,
             label: item.title,
             href: item.url,
-          })
+          });
         } else {
-          window.location.href = item.url
+          window.location.href = item.url;
         }
       }
     },
-    [onNavigate, query, saveRecentSearch]
-  )
+    [onNavigate, query, saveRecentSearch],
+  );
 
   // Keyboard navigation di dalam list hasil
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "ArrowDown") {
-        e.preventDefault()
-        setSelectedIndex((prev) => (prev < combinedResults.length - 1 ? prev + 1 : 0))
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev < combinedResults.length - 1 ? prev + 1 : 0));
       } else if (e.key === "ArrowUp") {
-        e.preventDefault()
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : Math.max(0, combinedResults.length - 1)))
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : Math.max(0, combinedResults.length - 1)));
       } else if (e.key === "Enter") {
-        e.preventDefault()
+        e.preventDefault();
         if (combinedResults[selectedIndex]) {
-          handleSelectItem(combinedResults[selectedIndex])
+          handleSelectItem(combinedResults[selectedIndex]);
         }
       } else if (e.key === "Escape") {
-        e.preventDefault()
-        setOpen(false)
+        e.preventDefault();
+        setOpen(false);
       }
     },
-    [combinedResults, selectedIndex, handleSelectItem]
-  )
+    [combinedResults, selectedIndex, handleSelectItem],
+  );
 
   // Scroll active item into view
   useEffect(() => {
-    if (!listRef.current) return
-    const activeEl = listRef.current.querySelector<HTMLElement>("[data-active='true']")
+    if (!listRef.current) return;
+    const activeEl = listRef.current.querySelector<HTMLElement>("[data-active='true']");
     if (activeEl) {
-      activeEl.scrollIntoView({ block: "nearest" })
+      activeEl.scrollIntoView({ block: "nearest" });
     }
-  }, [selectedIndex])
+  }, [selectedIndex]);
 
-  const filterTabs = ["Semua", "Navigasi", "Pendaftar", "Konten", "Pengguna", "Aksi"]
+  const filterTabs = ["Semua", "Navigasi", "Pendaftar", "Konten", "Pengguna", "Aksi"];
 
   return (
     <div className={cn("relative flex items-center", className)}>
@@ -326,8 +343,8 @@ export function SemanticSearch({
                 {query && (
                   <button
                     onClick={() => {
-                      setQuery("")
-                      inputRef.current?.focus()
+                      setQuery("");
+                      inputRef.current?.focus();
                     }}
                     className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
@@ -355,7 +372,7 @@ export function SemanticSearch({
                     "rounded-lg px-2.5 py-1 text-xs font-medium transition-all whitespace-nowrap",
                     selectedFilter === tab
                       ? "bg-primary text-primary-foreground shadow-2xs"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {tab}
@@ -364,7 +381,10 @@ export function SemanticSearch({
             </div>
 
             {/* Kontainer Hasil */}
-            <div ref={listRef} className="flex-1 overflow-y-auto p-2 space-y-1 min-h-[180px] max-h-[50vh]">
+            <div
+              ref={listRef}
+              className="flex-1 overflow-y-auto p-2 space-y-1 min-h-[180px] max-h-[50vh]"
+            >
               {/* State A: Input Kosong -> Rekomendasi & Riwayat */}
               {!query.trim() && (
                 <div className="p-2 space-y-4">
@@ -381,8 +401,8 @@ export function SemanticSearch({
                           <button
                             key={term}
                             onClick={() => {
-                              setQuery(term)
-                              inputRef.current?.focus()
+                              setQuery(term);
+                              inputRef.current?.focus();
                             }}
                             className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/30 hover:bg-muted px-2.5 py-1 text-xs text-foreground group transition-colors"
                           >
@@ -407,15 +427,24 @@ export function SemanticSearch({
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 px-1">
                       {localCatalog.slice(0, 6).map((item) => {
-                        const Icon = (item.icon as ComponentType<{ className?: string }>) || CATEGORY_ICONS[item.category] || BookOpen
-                        const colorClass = CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Lainnya"]
+                        const Icon =
+                          (item.icon as ComponentType<{ className?: string }>) ||
+                          CATEGORY_ICONS[item.category] ||
+                          BookOpen;
+                        const colorClass =
+                          CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Lainnya"];
                         return (
                           <div
                             key={item.id}
                             onClick={() => handleSelectItem(item)}
                             className="flex items-center gap-3 p-2.5 rounded-xl border border-border/50 hover:border-primary/40 hover:bg-muted/40 cursor-pointer transition-all group"
                           >
-                            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border", colorClass)}>
+                            <div
+                              className={cn(
+                                "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border",
+                                colorClass,
+                              )}
+                            >
                               <Icon className="h-4 w-4" />
                             </div>
                             <div className="min-w-0 flex-1">
@@ -428,7 +457,7 @@ export function SemanticSearch({
                             </div>
                             <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                           </div>
-                        )
+                        );
                       })}
                     </div>
                   </div>
@@ -440,7 +469,9 @@ export function SemanticSearch({
                 <div className="space-y-1">
                   <div className="flex items-center justify-between px-2 py-1 text-[11px] text-muted-foreground">
                     <span>
-                      Ditemukan <strong className="text-foreground">{combinedResults.length}</strong> hasil semantik
+                      Ditemukan{" "}
+                      <strong className="text-foreground">{combinedResults.length}</strong> hasil
+                      semantik
                     </span>
                     <span className="text-[10px] text-muted-foreground/70">
                       Gunakan panah ↑↓ dan Enter
@@ -448,9 +479,13 @@ export function SemanticSearch({
                   </div>
 
                   {combinedResults.map((item, idx) => {
-                    const isSelected = idx === selectedIndex
-                    const Icon = (item.icon as ComponentType<{ className?: string }>) || CATEGORY_ICONS[item.category] || CATEGORY_ICONS["Lainnya"] || BookOpen
-                    const colorClass = CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Lainnya"]
+                    const isSelected = idx === selectedIndex;
+                    const Icon =
+                      (item.icon as ComponentType<{ className?: string }>) ||
+                      CATEGORY_ICONS[item.category] ||
+                      CATEGORY_ICONS["Lainnya"] ||
+                      BookOpen;
+                    const colorClass = CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Lainnya"];
 
                     return (
                       <div
@@ -462,11 +497,16 @@ export function SemanticSearch({
                           "flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all border",
                           isSelected
                             ? "bg-primary/10 border-primary/40 shadow-xs"
-                            : "border-transparent hover:bg-muted/50"
+                            : "border-transparent hover:bg-muted/50",
                         )}
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border", colorClass)}>
+                          <div
+                            className={cn(
+                              "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border",
+                              colorClass,
+                            )}
+                          >
                             <Icon className="h-4 w-4" />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -498,7 +538,7 @@ export function SemanticSearch({
                                 "text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-md",
                                 item.score >= 85
                                   ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300"
-                                  : "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300"
+                                  : "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300",
                               )}
                             >
                               {item.score}% relevan
@@ -507,12 +547,12 @@ export function SemanticSearch({
                           <CornerDownLeft
                             className={cn(
                               "h-3.5 w-3.5 transition-opacity",
-                              isSelected ? "text-primary opacity-100" : "opacity-0"
+                              isSelected ? "text-primary opacity-100" : "opacity-0",
                             )}
                           />
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               )}
@@ -528,7 +568,9 @@ export function SemanticSearch({
                       Tidak ada hasil untuk &ldquo;{query}&rdquo;
                     </p>
                     <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                      Coba cari dengan kata kunci lain seperti &ldquo;santri&rdquo;, &ldquo;dokumen&rdquo;, &ldquo;bayar&rdquo;, &ldquo;tahfidz&rdquo;, &ldquo;berita&rdquo;, atau nama pendaftar.
+                      Coba cari dengan kata kunci lain seperti &ldquo;santri&rdquo;,
+                      &ldquo;dokumen&rdquo;, &ldquo;bayar&rdquo;, &ldquo;tahfidz&rdquo;,
+                      &ldquo;berita&rdquo;, atau nama pendaftar.
                     </p>
                   </div>
                 </div>
@@ -539,16 +581,24 @@ export function SemanticSearch({
             <div className="border-t border-border px-4 py-2.5 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">↑</kbd>
-                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">↓</kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">
+                    ↑
+                  </kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">
+                    ↓
+                  </kbd>
                   navigasi
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">↵</kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">
+                    ↵
+                  </kbd>
                   pilih
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">ESC</kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px] font-mono">
+                    ESC
+                  </kbd>
                   tutup
                 </span>
               </div>
@@ -560,5 +610,5 @@ export function SemanticSearch({
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
     </div>
-  )
+  );
 }

@@ -14,7 +14,12 @@ export const listStaff = createServerFn({ method: "GET" }).handler(async () => {
   if (roles.length === 0) return [];
   const ids = [...new Set(roles.map((r) => r.user_id))];
   const profiles = await db
-    .select({ id: users.id, username: users.username, full_name: users.full_name })
+    .select({
+      id: users.id,
+      username: users.username,
+      full_name: users.full_name,
+      is_active: users.is_active,
+    })
     .from(users)
     .where(inArray(users.id, ids))
     .all();
@@ -25,6 +30,7 @@ export const listStaff = createServerFn({ method: "GET" }).handler(async () => {
       role: r.role as "admin" | "superadmin",
       username: byId.get(r.user_id)?.username ?? null,
       full_name: byId.get(r.user_id)?.full_name ?? null,
+      is_active: byId.get(r.user_id)?.is_active ?? true,
     }))
     .sort((a, b) =>
       a.role === b.role

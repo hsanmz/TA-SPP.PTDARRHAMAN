@@ -96,7 +96,12 @@ function Siswa() {
   const [page, setPage] = useState(1);
   const [form, setForm] = useState({ ...empty });
 
-  const { data: students = [], isPending, refetch, isFetching } = useQuery({
+  const {
+    data: students = [],
+    isPending,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ["students"],
     queryFn: () => listStudents(),
   });
@@ -327,18 +332,35 @@ function Siswa() {
                 <Table>
                   <TableHeader className="bg-emerald-primary/5 border-b border-slate-100 [&_tr]:border-slate-200">
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 w-[280px]">Siswa</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">NIS</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">Kelas & Tingkat</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">Angkatan</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">Kontak Wali</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
-                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right">Aksi</TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 w-[280px]">
+                        Siswa
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        NIS
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Kelas & Tingkat
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Angkatan
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Kontak Wali
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Status
+                      </TableHead>
+                      <TableHead className="h-11 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right">
+                        Aksi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="divide-y divide-slate-100">
                     {shown.map((s) => (
-                      <TableRow key={s.id} className="hover:bg-slate-50/80 cursor-pointer transition-colors group">
+                      <TableRow
+                        key={s.id}
+                        className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                      >
                         <TableCell className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9 text-xs">
@@ -355,7 +377,11 @@ function Siswa() {
                                 {s.full_name}
                               </Link>
                               <div className="text-[11px] text-slate-400">
-                                {s.gender === "L" ? "Laki-laki" : s.gender === "P" ? "Perempuan" : "—"}
+                                {s.gender === "L"
+                                  ? "Laki-laki"
+                                  : s.gender === "P"
+                                    ? "Perempuan"
+                                    : "—"}
                               </div>
                             </div>
                           </div>
@@ -460,7 +486,9 @@ function Siswa() {
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px]">Wali</span>
-                        <span className="font-medium text-slate-800">{s.guardian_phone || "—"}</span>
+                        <span className="font-medium text-slate-800">
+                          {s.guardian_phone || "—"}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 pt-1">
@@ -529,7 +557,9 @@ function Siswa() {
             ] as const
           ).map(([key, label]) => (
             <div key={key} className="space-y-1.5">
-              <Label htmlFor={key} className="text-xs">{label}</Label>
+              <Label htmlFor={key} className="text-xs">
+                {label}
+              </Label>
               <Input
                 id={key}
                 value={form[key]}
@@ -538,7 +568,9 @@ function Siswa() {
             </div>
           ))}
           <div className="space-y-1.5">
-            <Label htmlFor="status" className="text-xs">Status Siswa</Label>
+            <Label htmlFor="status" className="text-xs">
+              Status Siswa
+            </Label>
             <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
               <SelectTrigger id="status">
                 <SelectValue />

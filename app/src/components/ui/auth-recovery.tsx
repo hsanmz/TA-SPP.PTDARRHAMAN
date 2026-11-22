@@ -1,6 +1,6 @@
-import { AuthRecoveryForm } from "./auth-recovery-form"
+import { AuthRecoveryForm } from "./auth-recovery-form";
 
-type Props = { open: boolean; onClose: () => void; apiBase: string; applicant?: boolean | "mixed" }
+type Props = { open: boolean; onClose: () => void; apiBase: string; applicant?: boolean | "mixed" };
 
 /**
  * Modal pemulihan akun. Dipertahankan untuk kompatibilitas; halaman login kini
@@ -8,7 +8,7 @@ type Props = { open: boolean; onClose: () => void; apiBase: string; applicant?: 
  * bukan modal lagi.
  */
 export function AuthRecovery({ open, onClose, apiBase, applicant = false }: Props) {
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <div
@@ -21,5 +21,5 @@ export function AuthRecovery({ open, onClose, apiBase, applicant = false }: Prop
         <AuthRecoveryForm apiBase={apiBase} applicant={applicant} onClose={onClose} />
       </section>
     </div>
-  )
+  );
 }

@@ -462,7 +462,10 @@ function Pembayaran() {
                               }
                             />
                             {(p.reject_reason || p.void_reason) && (
-                              <p className="text-[10px] text-rose-danger mt-1 max-w-[140px] truncate" title={p.reject_reason || p.void_reason || undefined}>
+                              <p
+                                className="text-[10px] text-rose-danger mt-1 max-w-[140px] truncate"
+                                title={p.reject_reason || p.void_reason || undefined}
+                              >
                                 {p.reject_reason || p.void_reason}
                               </p>
                             )}
@@ -705,7 +708,9 @@ function Pembayaran() {
             </Label>
             <label className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-3 text-xs text-slate-600 transition-colors hover:border-emerald-primary hover:text-emerald-primary">
               <Upload className="h-4 w-4" strokeWidth={1.8} />
-              <span className="truncate">{proof ? proof.name : "Pilih gambar bukti transfer..."}</span>
+              <span className="truncate">
+                {proof ? proof.name : "Pilih gambar bukti transfer..."}
+              </span>
               <input
                 id="proof"
                 type="file"
@@ -746,7 +751,8 @@ function Pembayaran() {
       >
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Sampaikan alasan penolakan agar orang tua santri mengetahui kekeliruan dokumen bukti bayar.
+            Sampaikan alasan penolakan agar orang tua santri mengetahui kekeliruan dokumen bukti
+            bayar.
           </p>
           <div className="space-y-1.5">
             <Label htmlFor="reject-reason" className="text-xs font-semibold text-slate-700">
@@ -793,7 +799,8 @@ function Pembayaran() {
           <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
             <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
             <span>
-              Pembayaran akan dibatalkan, saldo tagihan santri dikembalikan, dan nomor kuitansi dinyatakan tidak berlaku lagi di sistem.
+              Pembayaran akan dibatalkan, saldo tagihan santri dikembalikan, dan nomor kuitansi
+              dinyatakan tidak berlaku lagi di sistem.
             </span>
           </div>
           <div className="space-y-1.5">
@@ -831,7 +838,8 @@ function Pembayaran() {
               className="max-h-[65vh] w-auto max-w-full rounded-2xl border border-slate-200 object-contain shadow-sm"
             />
             <p className="text-center text-xs text-slate-500">
-              Pastikan tanggal transaksi, nama pemilik rekening pengirim, dan nominal transfer sesuai sebelum menyetujui.
+              Pastikan tanggal transaksi, nama pemilik rekening pengirim, dan nominal transfer
+              sesuai sebelum menyetujui.
             </p>
           </div>
         )}

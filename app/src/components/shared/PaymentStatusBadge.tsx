@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const styles: Record<string, { label: string; cls: string; dot: string }> = {
   paid: {
@@ -26,7 +26,7 @@ const styles: Record<string, { label: string; cls: string; dot: string }> = {
     cls: "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200",
     dot: "bg-slate-400",
   },
-}
+};
 
 /**
  * Badge status pembayaran seragam dengan dot indikator.
@@ -36,7 +36,7 @@ const defaultStyle = {
   label: "Menunggu",
   cls: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
   dot: "bg-amber-500",
-}
+};
 
 export default function PaymentStatusBadge({
   status,
@@ -47,7 +47,7 @@ export default function PaymentStatusBadge({
   label?: string;
   className?: string;
 }) {
-  const style = status && styles[status] ? styles[status] : styles["pending"] ?? defaultStyle;
+  const style = status && styles[status] ? styles[status] : (styles["pending"] ?? defaultStyle);
   return (
     <span
       className={cn(

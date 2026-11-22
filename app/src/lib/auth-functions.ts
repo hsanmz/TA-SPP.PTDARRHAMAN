@@ -201,6 +201,28 @@ export const resetAdminPassword = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const toggleStaffActive = createServerFn({ method: "POST" })
+  .validator(z.object({ userId: z.string().min(1), active: z.boolean() }))
+  .handler(async ({ data }) => {
+    const user = await requireSuperadmin();
+    if (data.userId === user.id) throw new Error("Tidak dapat menonaktifkan akun sendiri.");
+    await db
+      .update(users)
+      .set({ is_active: data.active, updated_at: new Date() })
+      .where(eq(users.id, data.userId));
+    if (!data.active) {
+      await db.delete(sessions).where(eq(sessions.user_id, data.userId));
+    }
+    void logAudit(
+      user.id,
+      data.active ? "activate_staff" : "deactivate_staff",
+      "user",
+      data.userId,
+      { active: data.active },
+    );
+    return { ok: true, active: data.active };
+  });
+
 export const updateProfile = createServerFn({ method: "POST" })
   .validator(
     z.object({

@@ -1,15 +1,15 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 export interface SegmentedItem {
-  label: string
-  value: number
-  color: string
+  label: string;
+  value: number;
+  color: string;
 }
 
 interface SegmentedBarProps {
-  items: SegmentedItem[]
-  max?: number
-  className?: string
+  items: SegmentedItem[];
+  max?: number;
+  className?: string;
 }
 
 /**
@@ -17,9 +17,9 @@ interface SegmentedBarProps {
  * Ported langsung dari apps/superadmin/src/pages/DashboardPage.tsx.
  */
 export default function SegmentedBar({ items, max, className }: SegmentedBarProps) {
-  const totalIsh = max !== undefined ? max : items.reduce((s, i) => s + i.value, 0)
+  const totalIsh = max !== undefined ? max : items.reduce((s, i) => s + i.value, 0);
   if (totalIsh === 0) {
-    return <p className="mt-3 text-xs text-slate-400">Belum ada data</p>
+    return <p className="mt-3 text-xs text-slate-400">Belum ada data</p>;
   }
 
   return (
@@ -48,5 +48,5 @@ export default function SegmentedBar({ items, max, className }: SegmentedBarProp
           ))}
       </div>
     </div>
-  )
+  );
 }

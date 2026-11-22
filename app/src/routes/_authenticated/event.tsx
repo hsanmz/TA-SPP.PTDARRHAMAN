@@ -78,7 +78,8 @@ function EventPage() {
 
   const { data: invData } = useQuery({
     queryKey: ["invoices-all-events"],
-    queryFn: () => listInvoices({ data: { page: 1, pageSize: 1000, type: "event", status: "all" } }),
+    queryFn: () =>
+      listInvoices({ data: { page: 1, pageSize: 1000, type: "event", status: "all" } }),
   });
   const invoices = invData?.rows ?? [];
 
@@ -183,7 +184,10 @@ function EventPage() {
         {isPending ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="h-48 animate-pulse rounded-2xl border-slate-100 bg-slate-50/70 p-5" />
+              <Card
+                key={i}
+                className="h-48 animate-pulse rounded-2xl border-slate-100 bg-slate-50/70 p-5"
+              />
             ))}
           </div>
         ) : filteredEvents.length === 0 ? (
@@ -270,7 +274,9 @@ function EventPage() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] text-emerald-700 font-medium">Cicilan Didukung</span>
+                    <span className="text-[11px] text-emerald-700 font-medium">
+                      Cicilan Didukung
+                    </span>
                     <Button
                       asChild
                       variant="ghost"

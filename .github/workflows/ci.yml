@@ -1,0 +1,41 @@
+name: CI / Production Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  audit-and-verify:
+    name: Type-Check, Lint, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        working-directory: app
+        run: bun install --frozen-lockfile
+
+      - name: TypeScript Type-Check
+        working-directory: app
+        run: bunx tsc --noEmit
+
+      - name: ESLint Static Analysis
+        working-directory: app
+        run: bun run lint
+
+      - name: Automated Tests (Unit, Scenario, HTTP SSR)
+        working-directory: app
+        run: bun run test
+
+      - name: Production Build
+        working-directory: app
+        run: bun run build

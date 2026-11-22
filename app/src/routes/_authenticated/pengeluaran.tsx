@@ -238,7 +238,9 @@ function Pengeluaran() {
               <table className="w-full text-sm min-w-[750px]">
                 <thead className="bg-emerald-primary/5 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   <tr>
-                    <th className="py-3 px-4 text-left whitespace-nowrap">Keperluan & Keterangan</th>
+                    <th className="py-3 px-4 text-left whitespace-nowrap">
+                      Keperluan & Keterangan
+                    </th>
                     <th className="py-3 px-4 text-left whitespace-nowrap">Kategori</th>
                     <th className="py-3 px-4 text-left whitespace-nowrap">Tanggal Keluar</th>
                     <th className="py-3 px-4 text-left whitespace-nowrap">Nominal Biaya</th>
@@ -257,7 +259,11 @@ function Pengeluaran() {
                       <td colSpan={5} className="py-12">
                         <EmptyState
                           icon={TrendingDown}
-                          title={search ? "Tidak ada pengeluaran yang cocok" : "Belum ada catatan pengeluaran"}
+                          title={
+                            search
+                              ? "Tidak ada pengeluaran yang cocok"
+                              : "Belum ada catatan pengeluaran"
+                          }
                           description={
                             search
                               ? "Coba sesuaikan kata kunci pencarian atau ubah filter kategori."
@@ -278,7 +284,9 @@ function Pengeluaran() {
                           <div className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
                             {e.title}
                           </div>
-                          {e.note && <div className="text-xs text-muted-foreground mt-0.5">{e.note}</div>}
+                          {e.note && (
+                            <div className="text-xs text-muted-foreground mt-0.5">{e.note}</div>
+                          )}
                         </td>
 
                         <td className="py-3 px-4">

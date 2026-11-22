@@ -2,51 +2,51 @@
 
 ## Aplikasi Manajemen Pembayaran SPP & Platform Manajemen Sekolah
 
-**Versi Dokumen:** 2.0 (Perbandingan & Perancangan)  
-**Status:** Draft  
-**Tanggal:** Juli 2026  
+**Versi Dokumen:** 2.0 (Perbandingan & Implementasi Aktual)  
+**Status:** Final  
+**Tanggal:** November 2026  
 
 ---
 
 ## 1. Ringkasan Eksekutif
 
-Dokumen PRD-v2 ini adalah **dokumen perbandingan** antara spesifikasi awal (**PRD-v1**) dengan implementasi aktual sistem saat ini (**TA SPP Payment System**), serta **dokumen perancangan** untuk fitur-fitur yang belum diimplementasikan.
+Dokumen PRD-v2 ini adalah **dokumen perbandingan** antara spesifikasi awal (**PRD-v1**) dengan implementasi aktual sistem saat ini (**TA SPP Payment System**), serta **catatan perancangan** untuk fitur-fitur yang diimplementasikan.
 
 PRD-v1 (Juli 2025) mendeskripsikan aplikasi **monolitik Laravel 12** dengan **Bootstrap 5**.  
-Project saat ini (Juli 2026) adalah **rewrite total** menggunakan **FastAPI (Python) + React 19 (TypeScript)** dengan arsitektur **REST API + SPA**.
+Project saat ini (November 2026) adalah **rewrite total** menggunakan **TanStack Start (React 19 + TypeScript) + Cloudflare D1** dengan arsitektur **Full-Stack SSR + Server Functions**.
 
-> **Catatan:** Tidak ada kode dari PRD-v1 yang digunakan kembali. Seluruh project saat ini dibangun dari nol dengan stack berbeda.
+> **Catatan:** Tidak ada kode dari PRD-v1 yang digunakan kembali. Seluruh project saat ini dibangun dari nol dengan stack berbeda yang lebih modern dan efisien.
 
 ---
 
 ## 2. Perbandingan Tech Stack
 
-| Komponen | PRD-v1 | Project Saat Ini |
+| Komponen | PRD-v1 (Rancangan Awal) | Implementasi Aktual (Nov 2026) |
 |---|---|---|
-| **Backend Framework** | Laravel 12 (PHP ^8.2) | FastAPI 0.115 (Python 3.12) |
-| **ORM** | Eloquent | SQLModel 0.0.24 + SQLAlchemy 2.0 |
-| **Database** | MySQL | PostgreSQL (prod) / SQLite (dev) |
-| **Frontend** | Bootstrap 5 + Blade + custom CSS | React 19 + TypeScript + Tailwind CSS 3 |
-| **Build Tool** | Vite 5 | Vite 8 |
-| **State Management** | Livewire / jQuery | React Context + hooks |
-| **Auth** | Laravel Sanctum (token-based) | JWT (python-jose, access + refresh token) |
-| **Real-time** | Pusher + Laravel Echo | SSE (Server-Sent Events) via `sse-starlette` |
-| **PDF Generation** | DomPDF (barryvdh/laravel-dompdf) | ReportLab 4.4 |
-| **Excel Export** | Maatwebsite/Laravel-Excel | OpenPyXL 3.1 |
-| **QR Code** | simplesoftwareio/simple-qrcode | qrcode 8.2 + Pillow 12.2 |
-| **Chart/Grafik** | — | Recharts 3.10 |
-| **HTTP Client** | Guzzle | Axios 1.18 |
-| **Arsitektur** | Monolitik MVC (Blade SSR) | REST API + SPA (terpisah) |
-| **Deployment** | — | Vercel (frontend + backend) |
-| **Container** | — | Docker + Docker Compose |
-| **Notifikasi Eksternal** | SMTP/Mailpit | WhatsApp Fonnte API |
-| **Payment Gateway** | — (tidak ada) | Midtrans / Xendit / Simulator |
+| **Framework** | Laravel 12 (PHP ^8.2) | TanStack Start + React 19 (TypeScript) |
+| **Rendering** | Blade SSR (Monolitik MVC) | SSR + Client-side hydration (Server Functions) |
+| **ORM** | Eloquent | Drizzle ORM v0.44 |
+| **Database (Prod)** | MySQL | **Cloudflare D1** (SQLite-compatible, edge DB) |
+| **Database (Dev)** | MySQL (local) | SQLite lokal (`data/ta-spp.db`) |
+| **Penyimpanan Media** | Filesystem lokal / S3 | **Cloudflare D1** (`DB_STORAGE` binding — `payment_proofs` table) |
+| **Frontend** | Bootstrap 5 + Blade + jQuery | React 19 + Tailwind CSS v4 + Radix UI |
+| **Build Tool** | Vite 5 | Vite (Rolldown) |
+| **State Management** | Livewire / jQuery | TanStack Query v5 + React hooks |
+| **Auth** | Laravel Sanctum (token-based) | Custom Session Cookie Auth (PBKDF2 + SHA-256, Bearer Token) |
+| **API Layer** | RESTful Controller (Blade) | TanStack Server Functions (`createServerFn`) — no separate API server |
+| **QR Code** | simplesoftwareio/simple-qrcode | `qrcode` (browser-side, kuitansi digital) |
+| **Chart/Grafik** | — | Recharts (embedded di dashboard) |
+| **Excel Export** | Maatwebsite/Laravel-Excel | SheetJS (`xlsx`) — client-side |
+| **Arsitektur** | Monolitik MVC (PHP + Blade) | Full-Stack SSR (TypeScript, single codebase) |
+| **Deployment** | — | **Cloudflare Workers** via Wrangler |
+| **Notifikasi Eksternal** | SMTP/Mailpit | — (WhatsApp manual via link) |
+| **Payment Gateway** | — (tidak ada) | QRIS (manual upload bukti) + Admin konfirmasi |
 
 ---
 
-## 3. Perbandingan Arsitektur Sistem
+## 3. Arsitektur Sistem Aktual (TanStack Start + Cloudflare)
 
-### 3.1 PRD-v1 (Laravel Monolitik)
+### 3.1 PRD-v1 (Laravel Monolitik — Rancangan Awal)
 
 ```
 ┌──────────────────────────────────────┐
@@ -68,36 +68,110 @@ Project saat ini (Juli 2026) adalah **rewrite total** menggunakan **FastAPI (Pyt
 └──────────────────────────────────────┘
 ```
 
-### 3.2 Project Saat Ini (FastAPI + React SPA)
+### 3.2 Implementasi Aktual (TanStack Start + Cloudflare Workers)
 
 ```
-┌──────────────────────┐    ┌──────────────────────────────┐
-│   Frontend (React)   │    │    Backend (FastAPI)          │
-│                      │    │                              │
-│  ┌────────────────┐  │    │  ┌────────────────────────┐  │
-│  │  AdminLayout   │  │    │  │  Routes (14 routers)   │  │
-│  │  WaliLayout    │  │    │  │  • auth, users         │  │
-│  │                │  │HTTP│  │  • students, bills     │  │
-│  │  Pages:        │◄┼────┼─►│  • spp, events         │  │
-│  │  • 14 Admin    │  │    │  │  • payments, receipts  │  │
-│  │  • 5 Wali      │  │    │  │  • reports, dashboard  │  │
-│  └────────────────┘  │    │  │  • audit, settings     │  │
-│                      │    │  │  • my, sse             │  │
-│  ┌────────────────┐  │    │  └───────────┬────────────┘  │
-│  │  AuthContext   │  │    │              │               │
-│  │  SettingsCtx   │  │    │  ┌───────────▼────────────┐  │
-│  └────────────────┘  │    │  │  Services Layer        │  │
-│                      │    │  │  • payment, spp        │  │
-│  ┌────────────────┐  │    │  │  • receipt, report     │  │
-│  │  SSE Client    │◄─┼────┼──┤  • notification, audit │  │
-│  └────────────────┘  │    │  └───────────┬────────────┘  │
-└──────────────────────┘    │              │               │
-                            │  ┌───────────▼────────────┐  │
-                            │  │  Models (SQLModel)     │  │
-                            │  │  PostgreSQL / SQLite   │  │
-                            │  └────────────────────────┘  │
-                            │                              │
-                            │  ┌────────────────────────┐  │
+┌─────────────────────────────────────────────────────────────┐
+│              Cloudflare Workers (Edge Runtime)              │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              TanStack Start Application               │  │
+│  │                                                       │  │
+│  │  ┌─────────────┐    ┌─────────────────────────────┐  │  │
+│  │  │  SSR Pages  │    │      Server Functions        │  │  │
+│  │  │  (React 19) │    │  (createServerFn — RPC)      │  │  │
+│  │  │             │    │  • auth-functions.ts          │  │  │
+│  │  │  Routes:    │    │  • api/payments.ts            │  │  │
+│  │  │  /beranda   │◄───┤  • api/invoices.ts            │  │  │
+│  │  │  /siswa     │    │  • api/students.ts            │  │  │
+│  │  │  /tagihan   │    │  • api/dashboard.ts           │  │  │
+│  │  │  /pembayaran│    │  • api/reports.ts             │  │  │
+│  │  │  /laporan   │    │  • api/settings.ts            │  │  │
+│  │  │  /pengaturan│    │  • api/events.ts              │  │  │
+│  │  │  /pengguna  │    │  • api/expenses.ts            │  │  │
+│  │  │  /profil    │    │  • api/audit.ts               │  │  │
+│  │  │  /kuitansi  │    │  • api/parents.ts             │  │  │
+│  │  └─────────────┘    └────────────┬────────────────┘  │  │
+│  │                                  │                    │  │
+│  │  ┌───────────────────────────────▼──────────────┐    │  │
+│  │  │             Backend Logic Layer               │    │  │
+│  │  │  lib/backend/auth.ts   (session, PBKDF2)      │    │  │
+│  │  │  lib/backend/crypto.ts (hash, token)          │    │  │
+│  │  │  lib/backend/spp.ts    (auto-generate SPP)    │    │  │
+│  │  │  lib/backend/audit.ts  (audit trail)          │    │  │
+│  │  └───────────────────────────────┬──────────────┘    │  │
+│  │                                  │                    │  │
+│  │  ┌───────────────────────────────▼──────────────┐    │  │
+│  │  │          Drizzle ORM (drizzle-orm/d1)         │    │  │
+│  │  │  lib/db/client.ts — D1 binding priority       │    │  │
+│  │  └───────────────────────────────┬──────────────┘    │  │
+│  └──────────────────────────────────│───────────────────┘  │
+│                                     │                       │
+│  ┌──────────────────────────────────▼───────────────────┐  │
+│  │              Cloudflare D1 (SQLite-compatible)        │  │
+│  │                                                       │  │
+│  │  Binding DB:          database utama (relasional)     │  │
+│  │  Binding DB_STORAGE:  tabel payment_proofs (media)    │  │
+│  │                                                       │  │
+│  │  Tabel: users, sessions, user_roles, students,        │  │
+│  │  parents, parent_students, spp_settings, events,      │  │
+│  │  invoices, payments, expenses, school_settings,       │  │
+│  │  bank_accounts, academic_years, bill_categories,      │  │
+│  │  audit_logs, payment_proofs                           │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 3.3 Alur Autentikasi
+
+```
+Browser                TanStack Start           Cloudflare D1
+  │                         │                        │
+  │── POST /login ──────────►│                        │
+  │   {username, password}  │── SELECT user ─────────►│
+  │                         │◄─ user row ─────────────│
+  │                         │                        │
+  │                         │── PBKDF2 verify ──────►│
+  │                         │   (100.000 iterasi)    │
+  │                         │                        │
+  │                         │── INSERT session ───────►│
+  │                         │   (token_hash=SHA256)  │
+  │                         │                        │
+  │◄─ { token, user } ──────│                        │
+  │                         │                        │
+  │── store token ──────────► localStorage           │
+  │                         │                        │
+  │── subsequent requests ──►│                        │
+  │   Authorization: Bearer │── resolveSession() ─────►│
+  │                         │   (verify token_hash)  │
+```
+
+### 3.4 Alur Pembayaran SPP
+
+```
+Admin/Superadmin kelola master data (siswa, tahun ajaran, bank, nominal SPP)
+    │
+    ├── SPP Auto-generate:
+    │   POST /api/cron/generate-spp {year, month}
+    │   → generateSppForPeriod() → INSERT invoices (satu per siswa aktif)
+    │
+    ├── Non-SPP / Event:
+    │   Admin buat tagihan manual → INSERT invoices
+    │
+    ├── Pembayaran QRIS (Wali):
+    │   Upload bukti transfer (WebP ≤800px, compressed) →
+    │   persistProof() → D1 storage → status: pending
+    │
+    ├── Pembayaran Tunai (Admin):
+    │   recordPayment() → INSERT payments (status: confirmed) →
+    │   buildReceiptNumber() → recalcInvoice()
+    │
+    └── Konfirmasi/Tolak (Admin):
+        confirmPayment() → UPDATE payments (status: confirmed) →
+        recalcInvoice() → UPDATE invoices (status: paid/partial)
+```
+
+
                             │  │  SSE Broadcast         │  │
                             │  │  WhatsApp Fonnte       │  │
                             │  │  Payment Gateway       │  │
@@ -126,35 +200,36 @@ Admin/Superadmin kelola master data (siswa, kategori, tahun ajaran, bank)
     └── Infaq: Otomatis tercatat dari pembayaran (infaq_amount) + pencatatan penyaluran manual
 ```
 
+
 ---
 
 ## 4. Perbandingan Role & Model Pengguna
 
-| Aspek | PRD-v1 | Project Saat Ini |
+| Aspek | PRD-v1 (Rancangan Awal) | Implementasi Aktual |
 |---|---|---|
-| **Role** | Admin, Murid | Admin, Superadmin, Wali (orang tua), Bendahara |
-| **Login Murid** | Murid login langsung dengan username/password | **Tidak ada role Murid.** Siswa adalah entitas `Student` yang dikelola oleh Wali |
-| **Relasi** | User (admin/murid) langsung memiliki tagihan | `User` (Wali) terhubung ke `Student` via tabel `parent_student` (many-to-many) |
-| **Default Password** | 123456789 (hardcoded) | Tidak ada (admin buat akun Wali manual) |
-| **Status Akun** | aktif (boolean) | `StudentStatus` enum: active, graduated, transferred, dropout, inactive |
+| **Role** | Admin, Murid | `superadmin`, `admin`, `parent` (orang tua/wali) |
+| **Login Murid** | Murid login langsung | **Tidak ada role Murid.** Siswa adalah entitas `students` yang dikelola oleh wali |
+| **Relasi** | User (admin/murid) langsung memiliki tagihan | `User` (wali/`parent`) terhubung ke `students` via tabel `parent_students` (many-to-many) |
+| **Default Password** | 123456789 (hardcoded) | Tidak ada default — admin buat akun via `/pengguna` |
+| **Status Akun** | aktif (boolean) | `is_active` boolean pada tabel `users`; `StudentStatus` enum: `active`, `graduated`, `inactive` pada tabel `students` |
 
 ### Perubahan Signifikan pada Role Model
 
 **PRD-v1** menyatukan murid dan admin dalam satu tabel `users` dengan field `role` (enum: admin/murid). Murid login langsung dan melihat tagihan sendiri.
 
-**Project saat ini** memisahkan:
-- **User** → admin, superadmin, wali (orang tua/wali murid)
-- **Student** → data siswa dengan NIS, status, kelas, tahun ajaran
-- **ParentStudent** → tabel link many-to-many antara wali dan siswa
+**Implementasi aktual** memisahkan:
+- **User** → `superadmin`, `admin`, `parent` (orang tua/wali murid), disimpan di `users` + `user_roles`
+- **Student** → data siswa dengan NIS, status, kelas, tahun kohort, disimpan di `students`
+- **ParentStudents** → tabel junction many-to-many antara wali dan siswa
 - Satu wali bisa memiliki banyak anak; satu anak bisa memiliki banyak wali
 
 Ini adalah perubahan fundamental yang membuat sistem lebih cocok untuk **sekolah/pesantren** di mana orang tua/wali yang bertanggung jawab atas pembayaran, bukan murid itu sendiri.
 
 ---
 
-## 5. Perbandingan Struktur Database
+## 5. Struktur Database Implementasi Aktual (16 Tabel)
 
-### 5.1 Tabel PRD-v1 (9 tabel)
+### 5.1 Tabel PRD-v1 (Rancangan — 6 tabel)
 
 | No | Tabel | Fungsi |
 |----|-------|--------|
@@ -165,659 +240,247 @@ Ini adalah perubahan fundamental yang membuat sistem lebih cocok untuk **sekolah
 | 5 | `pengeluaran` | Pencatatan pengeluaran sekolah |
 | 6 | `notifications` | Notifikasi in-app |
 
-### 5.2 Tabel Project Saat Ini (14 tabel)
+### 5.2 Tabel Implementasi Aktual (16 tabel — SQLite / Cloudflare D1)
 
-| No | Tabel | Fungsi | Status Migrasi |
-|----|-------|--------|----------------|
-| 1 | `users` | Admin, Superadmin, Wali, Bendahara | ✅ migrated |
-| 2 | `students` | Data siswa (NIS, nama, status, kelas) | ✅ migrated |
-| 3 | `parent_student` | Relasi many-to-many wali ↔ siswa | ✅ migrated |
-| 4 | `academic_years` | **BARU** — Master tahun ajaran | ✅ migrated |
-| 5 | `bill_categories` | **BARU** — Kategori tagihan dinamis | ✅ migrated |
-| 6 | `spp_settings` | Konfigurasi SPP (dengan academic_year_id) | ✅ migrated |
-| 7 | `bills` | Tagihan Non-SPP & Event (SPP bersifat virtual) | ✅ migrated |
-| 8 | `events` | **BARU** — Event/patungan sekolah | ✅ migrated |
-| 9 | `payments` | Pembayaran (gateway + manual, cicilan, infaq) | ✅ migrated |
-| 10 | `receipts` | **BARU** — Kuitansi digital (dengan void) | ✅ migrated |
-| 11 | `bank_accounts` | **BARU** — Rekening sekolah untuk transfer | ✅ migrated |
-| 12 | `school_settings` | **BARU** — Key-value store profil sekolah | ✅ migrated |
-| 13 | `audit_logs` | **BARU** — Audit trail keamanan | ✅ migrated |
-| 14 | `gateway_transactions` | **BARU** — Transaksi payment gateway | ⚠️ **belum ada migration file** |
+| No | Tabel | Fungsi |
+|----|-------|--------|
+| 1 | `users` | Semua akun sistem (superadmin, admin, parent) |
+| 2 | `sessions` | Token sesi aktif (SHA-256 hash, TTL 30 hari) |
+| 3 | `user_roles` | Role per user (many-to-many, mendukung multi-role) |
+| 4 | `students` | Data siswa (NIS, nama, kelas, status, soft-delete) |
+| 5 | `parents` | Data wali murid (bisa terhubung/tidak ke akun `users`) |
+| 6 | `parent_students` | Relasi many-to-many wali ↔ siswa |
+| 7 | `spp_settings` | Nominal SPP per kelas/grade/umum + tahun ajaran |
+| 8 | `events` | Event / kegiatan sekolah dengan target dana |
+| 9 | `invoices` | Tagihan (SPP/non-SPP/event) dengan cicilan & partial payment |
+| 10 | `payments` | Pembayaran (pending → confirmed/rejected/voided) |
+| 11 | `expenses` | Pengeluaran operasional sekolah |
+| 12 | `school_settings` | Profil sekolah (nama, alamat, QRIS, bank) |
+| 13 | `bank_accounts` | Rekening bank sekolah |
+| 14 | `academic_years` | Master tahun ajaran |
+| 15 | `bill_categories` | Kategori tagihan non-SPP dinamis |
+| 16 | `audit_logs` | Audit trail semua aksi sensitif |
+| + | `payment_proofs` | Bukti transfer (di D1 binding `DB_STORAGE` terpisah) |
 
-### 5.3 Perbedaan Detail PER Tabel
-
-#### `users` (PRD-v1) vs `users` (Sekarang)
-
-| Kolom PRD-v1 | Tipe v1 | Kolom Sekarang | Tipe Sekarang |
-|---|---|---|---|
-| id | bigint PK | id | INTEGER PK |
-| role | enum('admin','murid') | role | VARCHAR(20): 'admin', 'superadmin', 'wali', 'bendahara' |
-| nama | varchar(100) | full_name | VARCHAR(100) |
-| email | varchar(100) unique | email | VARCHAR(100) nullable |
-| username | varchar(50) unique | username | VARCHAR(50) UNIQUE INDEX |
-| password | varchar (hashed) | hashed_password | TEXT |
-| nip | varchar(30) nullable | — | — |
-| foto | varchar nullable | — (ada di avatar_url?) | — |
-| aktif | boolean default true | is_active | BOOLEAN |
-| — | — | phone | VARCHAR(20) nullable |
-| timestamps | created_at, updated_at | created_at, updated_at | DATETIME |
-
-#### `spp_settings`
-
-| Kolom PRD-v1 | Sekarang | Keterangan |
-|---|---|---|
-| nominal | monthly_nominal | Sama, numeric(12,2) |
-| berlaku_mulai | effective_from, effective_to | v1 hanya 1 tanggal; sekarang ada range |
-| — | due_day | **BARU** — tanggal jatuh tempo (default 10) |
-| — | academic_year | varchar(10) — DEPRECATED |
-| — | academic_year_id | **BARU** — FK ke academic_years |
-| — | is_active | **BARU** |
-| — | notes | **BARU** |
-
-#### `tagihans` (PRD-v1) vs `bills` (Sekarang)
-
-Perubahan paling signifikan: **SPP tidak lagi disimpan sebagai baris di tabel tagihan.**
-
-| Aspek | PRD-v1 (tagihans) | Sekarang (bills) |
-|---|---|---|
-| SPP | Disimpan sebagai baris dengan `jenis='spp'` | **VIRTUAL** — tidak disimpan, dihitung otomatis |
-| Non-SPP | `jenis='custom'` | Disimpan dengan `bill_type='non_spp'` |
-| Event | — (tidak ada) | Disimpan dengan `bill_type='event'` dan `event_id` |
-| Foreign Key | `user_id` → users | `student_id` → students |
-| Status | unpaid, pending, success, rejected | unpaid, partial, paid |
-| Cicilan | — | `total_paid` + `remaining_amount` (property) |
-| Kategori | — | `category_id` → bill_categories (dinamis) |
-| Tahun Ajaran | — | `academic_year_id` → academic_years |
-
-#### `pembayarans` (PRD-v1) vs `payments` (Sekarang)
-
-| Aspek | PRD-v1 | Sekarang |
-|---|---|---|
-| Status | pending, accepted, rejected | pending, paid, failed, expired, cancelled, refunded |
-| Verifikasi | Admin approve/reject | Gateway callback otomatis + manual admin |
-| Metode | — (upload bukti) | cash, transfer |
-| Channel | — | gateway, manual |
-| Infaq | — | `infaq_amount` + `total_amount` (amount + infaq) |
-| Cicilan | — | Cicilan via partial payment ke bill yang sama |
-| Foreign Key | `tagihan_id`, `user_id`, `admin_id` | `student_id`, `bill_id`, `created_by` |
-| Bukti | `bukti` (file upload) | — (tidak ada upload bukti, pakai gateway/manual) |
-| Waktu | `tanggal_upload`, `tanggal_bayar`, `tanggal_proses` | `created_at` (saat bayar) |
-
-#### `pengeluaran` (PRD-v1) — **BELUM ADA di project saat ini**
-
-| Kolom PRD-v1 | Tipe v1 |
-|---|---|
-| id | bigint PK |
-| kategori | varchar |
-| keterangan | varchar |
-| jumlah | decimal(12,2) |
-| tanggal | date |
-| admin_id | bigint (FK→users) |
-
-Fitur ini belum diimplementasikan. Lihat **Bab 10** untuk desain.
-
-#### Tabel BARU di Project Saat Ini
-
-| Tabel | Fungsi |
-|---|---|
-| `students` | Data siswa terpisah dari users |
-| `parent_student` | Relasi wali ↔ siswa (many-to-many) |
-| `academic_years` | Master tahun ajaran (anti-typo, tutup buku) |
-| `bill_categories` | Kategori tagihan dinamis (admin bisa tambah sendiri) |
-| `events` | Event/patungan dengan target donasi |
-| `receipts` | Kuitansi digital (nomor unik, void) |
-| `bank_accounts` | Rekening sekolah untuk pembayaran transfer |
-| `school_settings` | Key-value store (nama sekolah, logo, dll) |
-| `audit_logs` | Catatan aktivitas admin untuk audit |
-| `gateway_transactions` | Sesi checkout payment gateway |
-
-### 5.4 Diagram Relasi Database (Saat Ini)
+### 5.3 Diagram Relasi Database Aktual
 
 ```
-academic_years
-    ├── students.academic_year_id
-    ├── spp_settings.academic_year_id
-    ├── bills.academic_year_id
-    ├── payments.academic_year_id
-    └── events.academic_year_id
+users ──────────── user_roles (superadmin/admin/parent)
+  │
+  └── parents.user_id (opsional — wali yang punya akun)
+        └── parent_students ──────── students
+                                        │
+                               invoices.student_id
+                                        │
+                               payments.student_id
+                               payments.invoice_id ───► invoices
 
-users (admin/superadmin/wali)
-    └── parent_student.parent_id ──┐
-                                   ├── students
-    └── parent_student.student_id ─┘
-         ├── bills.student_id
-         ├── payments.student_id
-         └── gateway_transactions.student_id
+spp_settings ──── (digunakan oleh generateSppForPeriod)
+                  ──────────────────────────────────────► invoices (auto-generated SPP)
 
-bill_categories
-    └── bills.category_id
+events ─────────────────────────────────────────────────► invoices.event_id
 
-events
-    └── bills.event_id
+sessions.user_id ──────────────────────────────────────► users.id
 
-bills
-    └── payments.bill_id
-
-payments
-    └── receipts.payment_id (one-to-one)
-
-bank_accounts
-school_settings
-audit_logs
+audit_logs.user_id ────────────────────────────────────► users.id
 ```
 
 ---
 
-## 6. Perbandingan Fitur — Detail
+## 6. Perbandingan Fitur — Implementasi vs Rancangan PRD-v1
 
-### 6.1 Autentikasi
+### 6.1 Autentikasi & Keamanan
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Login username/password | ✅ | ✅ (plus OAuth2 form untuk Swagger) |
-| Logout | ✅ | ✅ (dicatat ke audit log) |
-| Redirect sesuai role | ✅ | ✅ (admin → /admin, wali → /wali) |
-| Validasi status aktif | ✅ | ✅ (is_active + StudentStatus) |
-| Refresh token | — | ✅ (JWT refresh token 7 hari) |
-| Demo/login test | — | ✅ (built-in demo accounts) |
+| Login username/password | ✅ | ✅ (PBKDF2 100.000 iterasi + SHA-256 token) |
+| Logout | ✅ | ✅ (hapus sesi di DB, dicatat di audit log) |
+| Redirect sesuai role | ✅ | ✅ (beranda menampilkan view sesuai role) |
+| Validasi status aktif | ✅ | ✅ (`is_active` check saat `resolveSession`) |
+| Refresh token | — | ❌ (sesi 30 hari, tidak ada refresh token terpisah) |
+| RBAC (role-based access) | ✅ | ✅ (`requireAdmin`, `requireSuperadmin`, `requireAuth`) |
+| Audit trail login/logout | — | ✅ (`audit_logs` tabel) |
+| CSRF protection | — | ✅ (`createCsrfMiddleware` pada server functions) |
+| Session management | — | ✅ (revoke sesi saat akun dinonaktifkan) |
 
-### 6.2 Dashboard Admin
+### 6.2 Dashboard
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Total murid aktif | ✅ | ✅ |
+| Total siswa aktif | ✅ | ✅ |
 | Total tagihan belum dibayar | ✅ | ✅ (outstanding amount) |
-| Total pembayaran diterima | ✅ | ✅ (income bulan ini) |
-| Total pengeluaran | ✅ | ❌ **Belum ada** |
-| Saldo akhir | ✅ | ❌ **Belum ada** (karena belum ada pengeluaran) |
-| Jumlah pembayaran pending | ✅ | ✅ |
-| — | — | ✅ Channel breakdown (gateway vs manual) |
-| — | — | ✅ Trend 6 bulan (grafik) |
-| — | — | ✅ Progress active events |
+| Total penerimaan periode | ✅ | ✅ (confirmed payments) |
+| Total pengeluaran | ✅ | ✅ (expenses tabel) |
+| Pembayaran pending | ✅ | ✅ |
+| Trend 6 bulan (grafik) | — | ✅ (Recharts — `GrowthChartCard`) |
+| Breakdown SPP vs Non-SPP | — | ✅ (`DonutCard` + `BreakdownCard`) |
+| Activity log terbaru | — | ✅ (`ActivityLogsCard`) |
+| Dashboard Wali Murid | — | ✅ (tagihan anak, riwayat pembayaran) |
 
-### 6.3 Manajemen Siswa/Murid
+### 6.3 Manajemen Siswa
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| CRUD murid/siswa | ✅ | ✅ |
-| Default password 123456789 | ✅ | ❌ (tidak relevan — tidak ada role murid) |
-| Aktif/Nonaktifkan | ✅ | ✅ (StudentStatus enum: active/graduated/dropout/dll) |
-| Reset password | ✅ | ✅ (hanya untuk user, bukan student) |
-| Lihat tagihan per murid | ✅ | ✅ (via student history) |
-| Lihat riwayat pembayaran | ✅ | ✅ (via student history) |
-| Import Excel/CSV | — | ✅ (dengan preview sebelum simpan) |
-| Upload foto siswa | — | ✅ |
+| CRUD siswa | ✅ | ✅ |
+| Nonaktifkan / soft-delete | ✅ | ✅ (`deleted_at`, `status` enum) |
+| Lihat tagihan per siswa | ✅ | ✅ (`/siswa/$studentId`) |
+| Lihat riwayat pembayaran | ✅ | ✅ |
 | Kelola orang tua/wali | — | ✅ (link/unlink parent-student) |
-| Status siswa (lulus/keluar) | — | ✅ (StudentStatus enum) |
+| Import CSV/Excel | — | ❌ (belum diimplementasikan) |
 
 ### 6.4 Manajemen Tagihan
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Buat tagihan (jenis: custom/non-SPP) | ✅ | ✅ (dengan kategori dinamis) |
-| Buat tagihan (jenis: SPP) | ✅ | ❌ SPP **VIRTUAL** — tidak perlu dibuat |
-| Hapus tagihan (jika belum dibayar) | ✅ | ✅ |
-| Status: unpaid, pending, success | ✅ | ✅ (unpaid, partial, paid) |
-| — | — | ✅ Cicilan (partial payment) |
-| — | — | ✅ Kategori tagihan dinamis (BillCategory) |
-| — | — | ✅ Tagihan massal ke banyak siswa |
-| — | — | ✅ Event/patungan dengan bill otomatis |
+| Buat tagihan Non-SPP | ✅ | ✅ |
+| Buat tagihan Event | — | ✅ |
+| Generate SPP otomatis | — | ✅ (`/api/cron/generate-spp` via CRON atau manual) |
+| Cicilan (partial payment) | — | ✅ (`allow_installment` flag per tagihan) |
+| Status: unpaid/partial/paid/cancelled | ✅ (sebagian) | ✅ |
+| Arsip tagihan (soft-delete) | — | ✅ (`deleted_at`) |
+| Filter multi-status & tipe | — | ✅ |
 
 ### 6.5 Manajemen Pembayaran
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Lihat daftar pembayaran pending | ✅ | ✅ (status pending dari gateway) |
-| Riwayat pembayaran | ✅ | ✅ |
-| Approve pembayaran (lunas/cicilan) | ✅ | ✅ (manual payment) |
-| Reject dengan alasan | ✅ | ✅ (via void, dengan alasan) |
-| Detail + bukti upload | ✅ | ✅ (receipt detail) |
-| Pembayaran Manual oleh Admin | ✅ | ✅ |
-| Payment Gateway | — | ✅ (Midtrans/Xendit/Simulator) |
-| Infaq sukarela | — | ✅ (infaq_amount per pembayaran) |
-| Void pembayaran | — | ✅ (dengan audit trail) |
-| Cicilan (installment) | — | ✅ (untuk SPP, Non-SPP, Event) |
+| Daftar pembayaran pending | ✅ | ✅ |
+| Konfirmasi (approve) | ✅ | ✅ |
+| Tolak dengan alasan | ✅ | ✅ |
+| Batalkan (void) pembayaran terkonfirmasi | — | ✅ |
+| Input tunai manual oleh admin | ✅ | ✅ (`recordPayment`) |
+| Upload bukti transfer (wali) | ✅ | ✅ (compressed WebP → D1 storage) |
+| Nomor kuitansi otomatis | — | ✅ (`buildReceiptNumber`) |
+| Kuitansi digital (QR code) | — | ✅ (`/kuitansi/$nomor`) |
+| Search by nama siswa/NIS | — | ✅ |
 
-### 6.6 Manajemen Pengeluaran
+### 6.6 Pengeluaran Operasional
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Kategori pengeluaran | ✅ (Listrik, Sarapan, WiFi, Osman, Other) | ❌ **Belum ada** |
-| CRUD pengeluaran | ✅ | ❌ **Belum ada** |
-| Laporan pengeluaran | ✅ | ❌ **Belum ada** |
-| Ekspor pengeluaran | ✅ (Excel/PDF) | ❌ **Belum ada** |
+| Catat pengeluaran | ✅ | ✅ |
+| Kategori pengeluaran | ✅ | ✅ (teks bebas) |
+| Lihat riwayat pengeluaran | ✅ | ✅ |
 
-> **Catatan:** Halaman Infaq saat ini memiliki fitur pencatatan "pengeluaran infaq" yang disimpan di localStorage (bukan database). Ini bersifat sementara dan perlu migrasi ke sistem database.
+### 6.7 Laporan Keuangan
 
-### 6.7 Pengaturan SPP
-
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Ubah nominal SPP per bulan | ✅ | ✅ |
-| Masa berlaku | ✅ (berlaku_mulai) | ✅ (effective_from, effective_to) |
-| Due date (jatuh tempo) | — | ✅ (due_day) |
-| Per tahun ajaran | — | ✅ (academic_year_id) |
+| Laporan per semester/periode | ✅ | ✅ |
+| Ekspor Excel | ✅ | ✅ (SheetJS — client-side) |
+| Rekap SPP 12-bulan per siswa | — | ✅ |
+| Laporan arus kas (penerimaan vs pengeluaran) | ✅ | ✅ |
+| Ekspor PDF | ✅ | ❌ (belum, hanya Excel) |
 
-### 6.8 Laporan & Ekspor
+### 6.8 Pengaturan
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Laporan SPP per tahun per murid | ✅ | ✅ (via SPP grid + report) |
-| Laporan tagihan non-SPP | ✅ | ✅ |
-| Laporan pengeluaran | ✅ | ❌ **Belum ada** |
-| Ekspor Excel | ✅ | ✅ (OpenPyXL) |
-| Ekspor PDF | ✅ | ✅ (ReportLab) |
-| — | — | ✅ Laporan infaq |
-| — | — | ✅ Laporan event |
-| — | — | ✅ Laporan bulanan (all types) |
+| Profil sekolah (nama, alamat, QRIS) | ✅ | ✅ |
+| Rekening bank | — | ✅ |
+| Nominal SPP (per kelas/grade/global) | ✅ | ✅ |
+| Tahun ajaran | — | ✅ |
+| Kategori tagihan | — | ✅ |
+| Audit log viewer | — | ✅ |
 
-### 6.9 Kuitansi
+### 6.9 Manajemen Pengguna (Superadmin)
 
-| Fitur | PRD-v1 | Sekarang |
+| Fitur | PRD-v1 | Implementasi Aktual |
 |---|---|---|
-| Cetak kuitansi PDF | ✅ | ✅ (ReportLab + QR code) |
-| — | — | ✅ Kuitansi PNG (WhatsApp-friendly) |
-| — | — | ✅ Nomor kuitansi unik otomatis |
-| — | — | ✅ Void kuitansi (dengan alasan) |
-| — | — | ✅ QR code verifikasi |
-| — | — | ✅ Share kuitansi via ReceiptShareCard |
-
-### 6.10 Notifikasi
-
-| Fitur | PRD-v1 | Sekarang |
-|---|---|---|
-| In-App Notification | ✅ (database) | ✅ (SSE real-time) |
-| Real-time via Pusher | ✅ | ❌ (diganti SSE) |
-| Email notification | ✅ (SMTP/Mailpit) | ❌ **Belum ada** |
-| — | — | ✅ WhatsApp Fonnte |
-| — | — | ✅ Notifikasi saat pembayaran dibuat |
-| — | — | ✅ Notifikasi saat status diupdate |
-
-### 6.11 Event & Infaq (Fitur Baru)
-
-| Fitur | PRD-v1 | Sekarang |
-|---|---|---|
-| Event/Patungan sekolah | — | ✅ |
-| Crowdfunding per event | — | ✅ |
-| Tracking kontribusi per siswa | — | ✅ |
-| Infaq sukarela per pembayaran | — | ✅ |
-| Buku kas infaq (inflow/outflow) | — | ⚠️ Sebagian (outflow masih localStorage) |
+| Tambah admin | — | ✅ |
+| Nonaktifkan admin | — | ✅ (revoke semua sesi otomatis) |
+| Reset password admin | — | ✅ |
+| Kelola peran | — | ✅ |
 
 ---
 
-## 7. Perbandingan Endpoint API
+## 7. Perbedaan Desain Signifikan dari PRD-v1
 
-### 7.1 PRD-v1 (Rute Web — Blade)
+### 7.1 Arsitektur: Monolitik → Full-Stack SSR Edge
 
-```
-Auth:
-  GET  /                          → Login page
-  POST /                          → Login process
-  POST /logout                    → Logout
+PRD-v1 merancang Laravel monolitik yang di-deploy ke server PHP. Implementasi aktual menggunakan **TanStack Start** yang berjalan sebagai **Cloudflare Worker** di edge network. Tidak ada server tradisional — seluruh logika backend berjalan sebagai fungsi serverless.
 
-Admin (/admin/*):
-  Dashboard, CRUD murid, CRUD tagihan, CRUD pengeluaran
-  Manajemen pembayaran (index, approve, reject, manual)
-  Pengaturan SPP, Profil
-  Laporan & ekspor (Excel/PDF)
-  Generate kuitansi PDF
+### 7.2 Database: MySQL → SQLite / Cloudflare D1
 
-Murid (/murid/*):
-  Dashboard, lihat tagihan, bayar SPP
-  Upload bukti, upload ulang
-  Riwayat pembayaran, rekap SPP
-  Kuitansi PDF, laporan, profil
+Cloudflare D1 adalah database SQLite-compatible yang berjalan di edge. Ini memungkinkan latensi sangat rendah karena database dekat dengan pengguna. Di development, menggunakan file SQLite lokal (`data/ta-spp.db`) tanpa dependensi jaringan.
 
-API:
-  GET /api/user
-  GET /validate-spp
-```
+### 7.3 Auth: Laravel Sanctum / JWT → Custom Session Token
 
-### 7.2 Project Saat Ini (105 Endpoint REST API)
+Implementasi menggunakan token berbasis SHA-256 yang disimpan di `localStorage` browser dan dikirim sebagai `Authorization: Bearer` header. Di sisi server, token di-hash ulang dan dicocokkan dengan `token_hash` di tabel `sessions`. Pendekatan ini dipilih karena Cloudflare Workers tidak mendukung `HttpOnly Cookie` dengan cara yang sama seperti server tradisional.
 
-**Auth (5):** `POST /auth/login`, `/auth/token`, `/auth/refresh`, `/auth/logout`, `GET /auth/me`
+> **Catatan Keamanan (Trade-off):** Token di `localStorage` lebih rentan terhadap XSS dibanding `HttpOnly Cookie`. Mitigasi: gunakan CSP yang ketat, sanitasi input, dan gunakan HTTPS di produksi.
 
-**Settings (38):** CRUD academic years, bill categories, bank accounts, spp settings, school settings, logo upload
+### 7.4 SPP: Tagihan Manual → Auto-Generate Engine
 
-**SSE (1):** `GET /sse/events` — real-time streaming
+PRD-v1 merancang admin membuat tagihan SPP satu per satu. Implementasi aktual memiliki **engine auto-generate SPP** (`generateSppForPeriod`) yang membuat tagihan untuk seluruh siswa aktif dalam satu perintah. Ini bisa dipicu via endpoint CRON atau tombol di dashboard.
 
-**Users (5):** CRUD user admin/wali, reset password
+### 7.5 Storage Media: File Upload → D1 Blob
 
-**Students (13):** CRUD siswa, import Excel/CSV, upload foto, link/unlink parent, lihat anak (wali)
-
-**SPP (2):** `GET /spp/status/{student_id}`, `GET /spp/grid`
-
-**Bills (5):** CRUD tagihan non-SPP (massal)
-
-**Events (9):** CRUD event, tracking progress, complete event, history
-
-**Wali Portal (4):** `GET /my/children`, `/my/bills`, `/my/payments`, `POST /my/checkout`
-
-**Payments (10):** Gateway create, callback webhook, manual payment, receipt detail, void receipt, infaq summary, student history, void payment, list payments
-
-**Receipts (2):** `GET /receipts/{id}/pdf`, `GET /receipts/{id}/image`
-
-**Reports (5):** SPP semester, monthly, student, infaq, events (format: json/pdf/excel)
-
-**Audit Logs (2):** List + filter audit logs
-
-**Dashboard (1):** `GET /dashboard/admin` — stats + trends + breakdown
-
-> **Detail lengkap:** 105 endpoint tersebar di 14 router file.
+Bukti transfer disimpan sebagai base64 di tabel `payment_proofs` di Cloudflare D1 (binding `DB_STORAGE`). Gambar dikompres otomatis ke WebP (≤800px, ~50-80 KB) di browser sebelum dikirim.
 
 ---
 
-## 8. Perbandingan Halaman Frontend
+## 8. Status Implementasi — Ringkasan
 
-### 8.1 Halaman Login
-
-| Aspek | PRD-v1 | Sekarang |
+| Komponen | Status | Catatan |
 |---|---|---|
-| Form | Username + Password | Username + Password |
-| Redirect | Berdasarkan role | Berdasarkan role (admin → /admin, wali → /wali) |
-| Tema | Hijau (#1E8449) | Hijau emerald (Tailwind: emerald) |
-
-### 8.2 Halaman Admin
-
-| Halaman PRD-v1 | Halaman Sekarang |
-|---|---|
-| Dashboard (5 kartu statistik) | ✅ DashboardPage (lebih lengkap: trend, breakdown, events) |
-| Daftar murid | ✅ StudentsPage (CRUD + import + filter status) |
-| Tambah murid | ✅ (bagian dari StudentsPage) |
-| Detail tagihan per murid | ✅ StudentHistoryPage |
-| Riwayat pembayaran per murid | ✅ StudentHistoryPage |
-| Daftar tagihan | ✅ NonSppPage + SppGridPage |
-| Buat tagihan | ✅ NonSppPage (massal) |
-| Pembayaran pending | ✅ PaymentKasirPage |
-| Approve/reject | ✅ PaymentKasirPage (void) |
-| Pembayaran manual | ✅ PaymentKasirPage |
-| Manajemen pengeluaran | ❌ **Belum ada** |
-| Pengaturan SPP | ✅ SettingsPage + SppGridPage |
-| Laporan | ✅ ReportsPage (4 jenis) |
-| Cetak kuitansi | ✅ Receipts (PDF + PNG + share) |
-| Profil admin | ✅ AdminProfilePage |
-| — | ✅ EventsPage (**BARU**) |
-| — | ✅ InfaqPage (**BARU**) |
-| — | ✅ ParentsPage (**BARU** — kelola wali) |
-| — | ✅ UsersPage (**BARU** — superadmin only) |
-| — | ✅ AuditLogPage (**BARU** — superadmin only) |
-
-### 8.3 Halaman Murid/Wali
-
-| Aspek | PRD-v1 (Murid) | Sekarang (Wali) |
-|---|---|---|
-| Login | Murid login langsung | Wali login, pilih anak |
-| Dashboard | ✅ | ✅ WaliDashboardPage (pilih anak, lihat summary) |
-| Bayar SPP | ✅ Pilih range bulan + upload bukti | ✅ WaliSppPage (bayar via gateway) |
-| Bayar tagihan | ✅ Upload bukti | ✅ (via gateway, gabung di WaliSppPage + WaliEventPage) |
-| Riwayat | ✅ | ✅ WaliHistoryPage |
-| Rekap SPP | ✅ | ✅ (via dashboard & SPP page) |
-| Kuitansi | ✅ Download PDF | ✅ (PDF + PNG + share) |
-| Laporan | ✅ | ✅ (via reports) |
-| Profil | ✅ | ✅ WaliProfilePage |
-| — | — | ✅ WaliEventPage (**BARU** — lihat event anak) |
-
-### 8.4 Layout
-
-| Aspek | PRD-v1 | Sekarang |
-|---|---|---|
-| Sidebar | Sidebar navigasi (berbeda admin/murid) | AdminLayout: sidebar collapsible + mobile bottom dock (Telegram-style 5 tab) |
-| Header | Header dengan notifikasi | Header + spotlight search (Ctrl+K) |
-| Footer | Footer | — |
-| Tema | Hijau (#1E8449) | Emerald (Tailwind), glass morphism, gradient |
-| Wali Layout | — | Bottom dock 5 tab + child selector dropdown |
+| **Auth & Session** | ✅ Production-ready | PBKDF2, SHA-256, RBAC, CSRF |
+| **Dashboard Admin** | ✅ Lengkap | Stats, charts, audit log |
+| **Dashboard Wali** | ✅ Tersedia di `/beranda` | Tampil kondisional berdasarkan role |
+| **Siswa CRUD** | ✅ Lengkap | Soft-delete, detail per siswa |
+| **Orang Tua** | ✅ Lengkap | Link/unlink ke siswa |
+| **Tagihan** | ✅ Lengkap | SPP, non-SPP, event, cicilan |
+| **Pembayaran** | ✅ Lengkap | Konfirmasi, tolak, void, tunai |
+| **Kuitansi Digital** | ✅ Lengkap | QR code, shareable link |
+| **Pengeluaran** | ✅ Lengkap | CRUD, kategori |
+| **Laporan** | ✅ Lengkap | Per semester, ekspor Excel |
+| **Pengaturan** | ✅ Lengkap | SPP, bank, profil, kategori |
+| **Pengguna** | ✅ Lengkap | Superadmin kelola admin |
+| **Profil** | ✅ Lengkap | Edit info + ganti password |
+| **Testing** | ✅ 3 suite | Crypto/auth, scenarios, SSR |
+| **Deployment** | ✅ Cloudflare Workers | Via Wrangler |
+| **Impor CSV Siswa** | ❌ Belum ada | Rencana fitur berikutnya |
+| **Ekspor PDF Laporan** | ❌ Belum ada | Hanya Excel saat ini |
+| **Portal Wali terpisah** | 🔄 Sebagian | Dashboard wali ada di `/beranda`, fitur upload bukti ada |
 
 ---
 
-## 9. Perubahan Alur Bisnis Signifikan
+## 9. Akun Default & Credential Awal
 
-### 9.1 SPP: Dari Tersimpan ke Virtual
+Akun dibuat via `bun run seed` di direktori `app/`:
 
-**PRD-v1:** Admin membuat tagihan SPP per bulan untuk setiap murid → murid bayar → admin verifikasi.
+| Username | Password | Role |
+|---|---|---|
+| `superadmin` | `SuperAdmin123!.` | superadmin |
+| `admin` | `Admin123!.` | admin |
 
-**Sekarang:** SPP tidak disimpan sebagai baris tagihan. Sistem menghitung status per bulan berdasarkan:
-1. Nominal SPP dari `spp_settings` (berdasarkan tahun ajaran)
-2. Total pembayaran sukses dengan `payment_type='spp'` per bulan
-3. Status: `unpaid` (0), `partial` (>0 tapi <nominal), `paid` (>=nominal)
-
-### 9.2 Pembayaran: Dari Upload Bukti ke Gateway + Manual
-
-**PRD-v1:** Murid upload bukti transfer (file gambar) → Admin approve/reject.
-
-**Sekarang:**
-- **Gateway:** Wali bayar online (Midtrans/Xendit) → callback otomatis → status update → kuitansi terbit
-- **Manual:** Admin/Kasir input pembayaran langsung (cash/transfer) → kuitansi terbit
-- **Tidak ada upload bukti** oleh wali/murid
-
-### 9.3 Role: Dari Murid ke Wali
-
-**PRD-v1:** Murid adalah user yang login langsung.
-
-**Sekarang:** Wali (orang tua) adalah user. Student adalah data terpisah. Satu wali bisa memiliki banyak anak. Pendekatan ini lebih sesuai untuk konteks sekolah/pesantren.
-
-### 9.4 Real-time: Dari Pusher ke SSE
-
-**PRD-v1:** Pusher (third-party service).
-
-**Sekarang:** SSE (Server-Sent Events) — built-in, tidak perlu third-party, lebih sederhana.
-
-### 9.5 Verifikasi: Dari Manual ke Otomatis
-
-**PRD-v1:** Admin harus approve/reject setiap pembayaran.
-
-**Sekarang:** Pembayaran gateway terverifikasi otomatis via webhook. Hanya pembayaran manual yang butuh input admin.
+> **Penting:** Ganti password setelah login pertama via halaman `/profil`.
 
 ---
 
-## 10. Fitur yang Belum Diimplementasi — Desain Manajemen Pengeluaran
+## 10. Perintah Developer
 
-Berdasarkan analisis, fitur **Manajemen Pengeluaran** dari PRD-v1 belum ada di project saat ini. Berikut desain untuk implementasinya.
+```bash
+# Masuk ke direktori app
+cd app/
 
-### 10.1 Deskripsi Fitur
+# Install dependensi
+bun install
 
-Manajemen Pengeluaran mencatat semua pengeluaran operasional sekolah. Data ini akan ditampilkan di dashboard admin (total pengeluaran, saldo akhir) dan tersedia dalam laporan yang bisa diekspor.
+# Jalankan migration DB lokal
+bun run db:apply
 
-### 10.2 Database Model
+# Seed akun awal
+bun run seed
 
-**Tabel: `expenses`**
+# Jalankan dev server
+bun run dev
 
-```sql
-CREATE TABLE expenses (
-    id              INTEGER PRIMARY KEY,
-    category        VARCHAR(50) NOT NULL,     -- listrik, sarapan, wifi, osman, other
-    description     TEXT NOT NULL,             -- keterangan pengeluaran
-    amount          NUMERIC(12,2) NOT NULL,   -- jumlah nominal
-    expense_date    DATE NOT NULL,             -- tanggal pengeluaran
-    payment_method  VARCHAR(20),              -- cash / transfer (nullable)
-    receipt_url     TEXT,                      -- bukti/foto struk (nullable)
-    notes           TEXT,                      -- catatan tambahan
-    created_by      INTEGER NOT NULL,         -- FK -> users.id (admin yg mencatat)
-    created_at      DATETIME NOT NULL,
-    updated_at      DATETIME NOT NULL,
-    
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
-CREATE INDEX idx_expenses_category ON expenses(category);
-CREATE INDEX idx_expenses_date ON expenses(expense_date);
-CREATE INDEX idx_expenses_created_by ON expenses(created_by);
+# Build untuk produksi
+bun run build
+
+# Deploy ke Cloudflare Workers
+bun run deploy
 ```
 
-### 10.3 Kategori Pengeluaran (dari PRD-v1 + tambahan)
-
-| Kode | Label | Default |
-|---|---|---|
-| `listrik` | Bayar Listrik | ✅ |
-| `sarapan` | Sarapan | ✅ |
-| `wifi` | Bayar WiFi | ✅ |
-| `osman` | Kebutuhan Osman | ✅ |
-| `other` | Other | ✅ |
-| `gaji` | Gaji Karyawan | ➕ tambahan |
-| `operasional` | Operasional Harian | ➕ tambahan |
-| `infaq` | Penyaluran Infaq | ➕ tambahan (hubungkan dengan infaq outflow) |
-
-### 10.4 Relasi ke Infaq
-
-Halaman Infaq saat ini memiliki fitur "pencatatan pengeluaran infaq" yang masih disimpan di localStorage. Desain baru:
-
-1. Semua pencatatan outflow infaq akan disimpan ke tabel `expenses` dengan `category='infaq'`
-2. Data infaq inflow tetap dari `payments.infaq_amount`
-3. Halaman Infaq tetap menampilkan inflow + outflow, tapi datanya dari database bukan localStorage
-
-### 10.5 API Endpoint
-
-Semua endpoint di bawah router `/expenses` — restricted ke admin:
-
-| Method | Path | Deskripsi |
-|---|---|---|
-| `GET` | `/expenses` | List semua pengeluaran (dengan filter: kategori, tanggal range, search) |
-| `POST` | `/expenses` | Buat pengeluaran baru |
-| `GET` | `/expenses/{id}` | Detail pengeluaran |
-| `PUT` | `/expenses/{id}` | Update pengeluaran (jika belum ada relasi) |
-| `DELETE` | `/expenses/{id}` | Hapus pengeluaran |
-| `GET` | `/expenses/categories` | List kategori yang tersedia |
-| `GET` | `/expenses/report` | Laporan pengeluaran (format: json/pdf/excel) |
-
-### 10.6 Skema Request/Response
-
-```json
-POST /expenses
-{
-    "category": "listrik",
-    "description": "Pembayaran tagihan listrik bulan Juli 2026",
-    "amount": 1500000.00,
-    "expense_date": "2026-07-15",
-    "payment_method": "transfer",
-    "notes": "ID Pelanggan: 123456789"
-}
-
-Response:
-{
-    "id": 1,
-    "category": "listrik",
-    "description": "Pembayaran tagihan listrik bulan Juli 2026",
-    "amount": 1500000.00,
-    "expense_date": "2026-07-15",
-    "payment_method": "transfer",
-    "created_by": { "id": 1, "full_name": "Admin Sekolah" },
-    "created_at": "2026-07-15T10:30:00Z"
-}
-```
-
-### 10.7 Frontend Pages
-
-**Halaman Baru: `ExpensesPage.tsx`** (di `src/pages/admin/`)
-
-- **List view:** Tabel dengan filter kategori, range tanggal, search
-- **Create:** Modal form dengan field: kategori (dropdown), deskripsi, jumlah, tanggal, metode bayar, notes
-- **Edit:** Modal form yang sama (pre-filled)
-- **Delete:** Konfirmasi sebelum hapus
-- **Summary cards:** Total bulan ini, per kategori
-- **Export:** Tombol ekspor ke Excel/PDF
-
-**Integrasi Dashboard:**
-- Dashboard admin akan menampilkan **total pengeluaran bulan ini**
-- **Saldo akhir** = total pemasukan - total pengeluaran
-
-**Integrasi Laporan:**
-- Tab baru di halaman ReportsPage: "Laporan Pengeluaran"
-- Format: Excel + PDF
-
-### 10.8 Update ke Dashboard Admin
-
-Response `GET /dashboard/admin` perlu ditambah field:
-
-```json
-{
-    "total_expense_this_month": 5000000.00,
-    "net_balance": 15000000.00,
-    "expense_breakdown": {
-        "listrik": 1500000,
-        "sarapan": 2000000,
-        "wifi": 500000,
-        "osman": 500000,
-        "other": 500000
-    }
-}
-```
-
-### 10.9 Migrasi Data Infaq Outflow dari localStorage
-
-1. Buat migration untuk tabel `expenses`
-2. Buat endpoint `/expenses/migrate-from-localstorage` untuk import data lama
-3. Atau buat API endpoint yang menyimpan outflow langsung ke `expenses` dengan `category='infaq'`
-4. Update InfaqPage untuk membaca outflow dari API (bukan localStorage)
-
 ---
-
-## 11. Catatan Tambahan & Issues
-
-### 11.1 Gateway Transactions — Migration Hilang
-
-Tabel `gateway_transactions` didefinisikan di `models.py` (baris 344-363) tapi **tidak ada file migration Alembic** untuk tabel ini. 
-
-**Dampak:**
-- Di development (SQLite): aman karena `create_all()` jalan otomatis
-- Di production (PostgreSQL): tabel ini **tidak akan ada** sampai migration dibuat
-
-**Rekomendasi:** Buat migration baru untuk `gateway_transactions`.
-
-### 11.2 Deprecated Columns
-
-Beberapa kolom di database saat ini sudah deprecated (masih ada untuk backward compatibility):
-
-| Tabel | Kolom Deprecated | Pengganti |
-|---|---|---|
-| `students` | `academic_year` (varchar) | `academic_year_id` (FK) |
-| `students` | `is_active` (boolean) | `status` (enum) |
-| `spp_settings` | `academic_year` (varchar) | `academic_year_id` (FK) |
-| `bills` | `category` (varchar) | `category_id` (FK) |
-| `bills` | `bill_type` (spp/non_spp/event) | `category_id` (FK) |
-
-### 11.3 Email Notification — Belum Ada
-
-PRD-v1 menyebutkan email notification via SMTP/Mailpit. Project saat ini hanya punya WhatsApp Fonnte. Email notification belum diimplementasikan.
-
-### 11.4 File Upload — Tidak Ada
-
-PRD-v1 memiliki flow upload bukti bayar oleh murid. Project saat ini tidak memiliki fitur upload file untuk pembayaran. Jika diperlukan, perlu ditambahkan endpoint upload + kolom `proof_url` di payment.
-
----
-
-## 12. Kesimpulan & Rekomendasi
-
-### 12.1 Perubahan Fundamental dari PRD-v1
-
-1. **Tech stack:** Laravel PHP → FastAPI Python + React TypeScript
-2. **Arsitektur:** Monolitik → REST API + SPA
-3. **Database:** 9 tabel → 14 tabel dengan relasi lebih kompleks
-4. **Role model:** Admin + Murid → Admin/Superadmin/Wali/Bendahara + Student
-5. **SPP:** Tersimpan di tabel → Virtual/computed
-6. **Pembayaran:** Upload bukti manual → Gateway otomatis + manual
-7. **Real-time:** Pusher (third-party) → SSE (built-in)
-
-### 12.2 Fitur yang Harus Ditambahkan
-
-| Prioritas | Fitur | Estimasi |
-|---|---|---|
-| 🔴 Tinggi | Manajemen Pengeluaran (tabel `expenses`) | 3-5 hari |
-| 🔴 Tinggi | Migration untuk `gateway_transactions` | 0.5 hari |
-| 🟡 Sedang | Bersihkan deprecated columns | 1-2 hari |
-| 🟢 Rendah | Email notifications | 2-3 hari |
-| 🟢 Rendah | Upload bukti pembayaran (opsional) | 2-3 hari |
-
-### 12.3 Catatan Akhir
-
-Project saat ini secara keseluruhan sudah **jauh lebih maju** dari spesifikasi PRD-v1 dalam hal:
-- Fitur (lebih banyak: event, infaq, audit, gateway, dll)
-- Arsitektur (lebih modern: API + SPA)
-- Keamanan (JWT, audit trail)
-- Deployment (Docker, Vercel)
-
-Satu fitur PRD-v1 yang hilang (**Manajemen Pengeluaran**) sudah didesain di Bab 10 dan siap diimplementasikan.
-
----
-
-*Dokumen ini disusun berdasarkan analisis kode terhadap:*
-- *`PRD-v.1.md` — spesifikasi awal (Juli 2025)*
-- *`backend/` — FastAPI backend (105 endpoint, 14 tabel)*
-- *`spp/` — React frontend (14 halaman admin, 5 halaman wali)*

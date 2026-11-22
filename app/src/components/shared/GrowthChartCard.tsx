@@ -6,29 +6,29 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts"
-import type { LucideIcon } from "lucide-react"
-import { Activity } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+} from "recharts";
+import type { LucideIcon } from "lucide-react";
+import { Activity } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export interface GrowthPoint {
-  date: string
-  total: number
+  date: string;
+  total: number;
 }
 
 interface GrowthChartCardProps {
-  title?: string
-  description?: string
-  icon?: LucideIcon
-  data?: GrowthPoint[]
-  deltaPct?: number | null
-  deltaLabel?: string
-  unit?: string
-  loading?: boolean
-  className?: string
+  title?: string;
+  description?: string;
+  icon?: LucideIcon;
+  data?: GrowthPoint[];
+  deltaPct?: number | null;
+  deltaLabel?: string;
+  unit?: string;
+  loading?: boolean;
+  className?: string;
 }
 
 /**
@@ -46,10 +46,15 @@ export default function GrowthChartCard({
   loading = false,
   className,
 }: GrowthChartCardProps) {
-  const hasData = data.length > 0 && data.some((p) => p.total > 0)
+  const hasData = data.length > 0 && data.some((p) => p.total > 0);
 
   return (
-    <Card className={cn("flex flex-col overflow-hidden rounded-2xl border-slate-100 bg-white shadow-sm", className)}>
+    <Card
+      className={cn(
+        "flex flex-col overflow-hidden rounded-2xl border-slate-100 bg-white shadow-sm",
+        className,
+      )}
+    >
       <CardHeader className="border-b border-slate-50 bg-slate-50/50 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -94,7 +99,12 @@ export default function GrowthChartCard({
                     <stop offset="95%" stopColor="#1A6B47" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.6} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#e2e8f0"
+                  opacity={0.6}
+                />
                 <XAxis
                   dataKey="date"
                   axisLine={false}
@@ -140,5 +150,5 @@ export default function GrowthChartCard({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

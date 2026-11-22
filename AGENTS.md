@@ -26,25 +26,19 @@ Dokumen ini adalah pedoman wajib bagi seluruh agen kecerdasan buatan (AI) maupun
 
 ## 🏛️ 2. ARSITEKTUR BASIS DATA & KONEKSI
 
-Sistem menggunakan model *Hybrid Database Architecture*:
+Sistem menggunakan arsitektur **Cloudflare D1 Native Database**:
 
-1. **Basis Data Relasional Utama (Primary Relational DB)**:
-   - **Provider**: **Turso (LibSQL)**
-   - **URL**: `libsql://payptd-hsanmz.aws-ap-southeast-1.turso.io`
-   - **ORM**: Drizzle ORM (`app/drizzle/schema.ts`)
-   - **Tabel**: `users`, `sessions`, `user_roles`, `students`, `parents`, `parent_students`, `spp_settings`, `events`, `invoices`, `payments`, `expenses`, `school_settings`, `bank_accounts`, `academic_years`, `bill_categories`, `audit_logs`.
-   - **Environment Variables**:
-     - `DATABASE_URL`: URL koneksi Turso atau SQLite local
-     - `DATABASE_AUTH_TOKEN`: Token JWT Turso
-
-2. **Basis Data Media / Bukti Transfer (Edge Storage DB)**:
-   - **Provider**: **Cloudflare D1** (`ta-spp-storage`)
+1. **Basis Data Produksi Utama (Primary Production DB)**:
+   - **Provider**: **Cloudflare D1** (`payptd`)
    - **Database ID**: `bcf1d253-7f8a-4669-b399-05d06127240f`
-   - **Binding**: `DB_STORAGE` (dikonfigurasikan di `app/wrangler.json`)
-   - **Fungsi**: Menyimpan payload gambar bukti transfer pembayaran (`payment_proofs`) di edge Cloudflare Workers agar database utama tidak membengkak dan akses gambar cepat melalui endpoint `/api/proofs/{id}`.
+   - **Bindings**: `DB` (relational database) & `DB_STORAGE` (media/bukti transfer) di `app/wrangler.json`
+   - **ORM**: Drizzle ORM dengan native D1 driver (`drizzle-orm/d1`) via `app/src/lib/db/client.ts`
+   - **Tabel**: `users`, `sessions`, `user_roles`, `students`, `parents`, `parent_students`, `spp_settings`, `events`, `invoices`, `payments`, `expenses`, `school_settings`, `bank_accounts`, `academic_years`, `bill_categories`, `audit_logs`, `payment_proofs`.
+   - **Catatan**: Dependensi remote Turso telah sepenuhnya dihapus sesuai arahan (100% full Cloudflare D1).
 
-3. **Pengembangan Lokal (Local Development Fallback)**:
-   - Jika offline atau tanpa kredensial remote, fallback database lokal berada di `app/data/ta-spp.db`.
+2. **Pengembangan & Pengujian Lokal (Local Development & Offline Testing)**:
+   - Database lokal menggunakan SQLite `app/data/ta-spp.db` dan `app/data/test-audit.db` tanpa dependensi jaringan eksternal.
+   - Konfigurasi env lokal: `DATABASE_URL="file:./data/ta-spp.db"`.
 
 ---
 

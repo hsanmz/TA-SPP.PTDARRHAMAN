@@ -23,6 +23,7 @@ import {
   removeParentStudentLink,
   deleteParent,
   linkParentAccount,
+  toggleParentUserActive,
 } from "@/lib/api/parents";
 import { listStudentsMin } from "@/lib/api/students";
 import { useAuth } from "@/lib/useAuth";
@@ -157,6 +158,16 @@ function OrangTua() {
     }
   };
 
+  const handleToggleActive = async (parentId: string, active: boolean) => {
+    try {
+      await toggleParentUserActive({ data: { parentId, active } });
+      toast.success(active ? "Akun wali diaktifkan" : "Akun wali dinonaktifkan");
+      void qc.invalidateQueries({ queryKey: ["parents"] });
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal mengubah status akun");
+    }
+  };
+
   const linkAccount = useMutation({
     mutationFn: async () => {
       if (!linkUserFor || !linkUsername.trim()) throw new Error("Username harus diisi");
@@ -271,7 +282,9 @@ function OrangTua() {
               <table className="w-full text-sm min-w-[850px]">
                 <thead className="bg-emerald-primary/5 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   <tr>
-                    <th className="py-3 px-4 text-left whitespace-nowrap">Wali Murid / Orang Tua</th>
+                    <th className="py-3 px-4 text-left whitespace-nowrap">
+                      Wali Murid / Orang Tua
+                    </th>
                     <th className="py-3 px-4 text-left whitespace-nowrap">Kontak</th>
                     <th className="py-3 px-4 text-left whitespace-nowrap">Santri Terhubung</th>
                     <th className="py-3 px-4 text-left whitespace-nowrap">Status Akun</th>
@@ -290,7 +303,9 @@ function OrangTua() {
                       <td colSpan={5} className="py-12">
                         <EmptyState
                           icon={UserSquare2}
-                          title={search ? "Tidak ada orang tua yang cocok" : "Belum ada data orang tua"}
+                          title={
+                            search ? "Tidak ada orang tua yang cocok" : "Belum ada data orang tua"
+                          }
                           description={
                             search
                               ? "Coba kata kunci pencarian lain atau kosongkan kolom pencarian."
@@ -325,9 +340,13 @@ function OrangTua() {
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {p.username ? (
-                                    <span className="font-mono text-emerald-700">@{p.username}</span>
+                                    <span className="font-mono text-emerald-700">
+                                      @{p.username}
+                                    </span>
                                   ) : (
-                                    <span className="text-slate-400 italic">Belum ada username</span>
+                                    <span className="text-slate-400 italic">
+                                      Belum ada username
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -393,10 +412,39 @@ function OrangTua() {
                           {/* Status Akun */}
                           <td className="py-3 px-4">
                             {p.user_id ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                Akun Tersambung
-                              </span>
+                              <div className="flex items-center gap-2">
+                                {p.user_is_active === false ? (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
+                                    Nonaktif
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    Akun Aktif
+                                  </span>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={cn(
+                                    "h-6 px-1.5 text-[10px] rounded-md font-medium",
+                                    p.user_is_active === false
+                                      ? "text-emerald-700 hover:bg-emerald-50"
+                                      : "text-rose-600 hover:bg-rose-50",
+                                  )}
+                                  onClick={() =>
+                                    void handleToggleActive(p.id, p.user_is_active === false)
+                                  }
+                                  title={
+                                    p.user_is_active === false
+                                      ? "Aktifkan akun wali"
+                                      : "Nonaktifkan akun wali"
+                                  }
+                                >
+                                  {p.user_is_active === false ? "Aktifkan" : "Nonaktifkan"}
+                                </Button>
+                              </div>
                             ) : (
                               <div className="flex items-center gap-2">
                                 <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200">
@@ -406,7 +454,7 @@ function OrangTua() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-6 px-1.5 text-[10px] text-emerald-700 hover:bg-emerald-50"
+                                  className="h-6 px-1.5 text-[10px] text-emerald-700 hover:bg-emerald-50 font-medium"
                                   onClick={() => {
                                     setLinkUserFor(p.id);
                                     setLinkUsername(p.username || "");
@@ -600,7 +648,8 @@ function OrangTua() {
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            Wali murid dapat mengakses seluruh tagihan SPP dan riwayat pembayaran santri yang terhubung.
+            Wali murid dapat mengakses seluruh tagihan SPP dan riwayat pembayaran santri yang
+            terhubung.
           </p>
         </div>
       </Modal>
@@ -645,7 +694,8 @@ function OrangTua() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Pastikan akun wali sudah terdaftar di sistem. Data profil orang tua akan otomatis tersambung ke user tersebut.
+            Pastikan akun wali sudah terdaftar di sistem. Data profil orang tua akan otomatis
+            tersambung ke user tersebut.
           </p>
         </div>
       </Modal>

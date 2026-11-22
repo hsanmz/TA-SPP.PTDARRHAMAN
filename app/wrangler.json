@@ -10,8 +10,13 @@
   },
   "d1_databases": [
     {
+      "binding": "DB",
+      "database_name": "payptd",
+      "database_id": "bcf1d253-7f8a-4669-b399-05d06127240f"
+    },
+    {
       "binding": "DB_STORAGE",
-      "database_name": "ta-spp-storage",
+      "database_name": "payptd",
       "database_id": "bcf1d253-7f8a-4669-b399-05d06127240f"
     }
   ]

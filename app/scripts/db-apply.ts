@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { createClient as createWebClient } from "@libsql/client/web";
 import { drizzle as drizzleWeb } from "drizzle-orm/libsql/web";
-import { migrate as migrateWeb } from "drizzle-orm/libsql/web/migrator";
+import { migrate } from "drizzle-orm/libsql/migrator";
 import * as schema from "../drizzle/schema";
 
 const url = process.env.DATABASE_URL ?? "file:./data/ta-spp.db";
@@ -31,12 +31,12 @@ if (url.startsWith("file:")) {
   } catch {
     client = createWebClient({ url, authToken });
     db = drizzleWeb(client, { schema });
-    migrateFn = migrateWeb;
+    migrateFn = migrate;
   }
 } else {
   client = createWebClient({ url, authToken });
   db = drizzleWeb(client, { schema });
-  migrateFn = migrateWeb;
+  migrateFn = migrate;
 }
 
 await migrateFn(db, { migrationsFolder: "./drizzle/migrations" });

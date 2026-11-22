@@ -1,29 +1,29 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { TrendingUp } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { TrendingUp } from "lucide-react";
 
 export interface TrendPoint {
-  date: string
-  count: number
-  amount?: number
+  date: string;
+  count: number;
+  amount?: number;
 }
 
 interface RegistrationTrendProps {
-  title?: string
-  data?: TrendPoint[]
-  loading?: boolean
-  unit?: string
+  title?: string;
+  data?: TrendPoint[];
+  loading?: boolean;
+  unit?: string;
 }
 
 const formatLabel = (iso: string) => {
-  if (iso.length === 7) return iso
-  const parts = iso.split("-")
+  if (iso.length === 7) return iso;
+  const parts = iso.split("-");
   if (parts.length >= 3) {
-    return `${parts[2]}/${parts[1]}`
+    return `${parts[2]}/${parts[1]}`;
   }
-  return iso
-}
+  return iso;
+};
 
 /**
  * Kartu tren grafik batang responsive.
@@ -35,8 +35,8 @@ export default function RegistrationTrend({
   loading,
   unit = "Transaksi",
 }: RegistrationTrendProps) {
-  const total = data.reduce((sum, point) => sum + (point.count || 0), 0)
-  const chartData = data.map((point) => ({ ...point, label: formatLabel(point.date) }))
+  const total = data.reduce((sum, point) => sum + (point.count || 0), 0);
+  const chartData = data.map((point) => ({ ...point, label: formatLabel(point.date) }));
 
   return (
     <Card className="rounded-2xl border-slate-100 bg-white shadow-sm">
@@ -76,12 +76,17 @@ export default function RegistrationTrend({
                   contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
                   formatter={(value) => [value, unit]}
                 />
-                <Bar dataKey="count" fill="var(--color-emerald-primary, #1A6B47)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <Bar
+                  dataKey="count"
+                  fill="var(--color-emerald-primary, #1A6B47)"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={32}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

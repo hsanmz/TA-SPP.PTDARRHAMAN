@@ -369,7 +369,9 @@ function Tagihan() {
                             <div className="text-xs text-muted-foreground mt-0.5">
                               {st?.full_name ?? nama(i.student_id)}
                               {st?.nis && (
-                                <span className="font-mono text-slate-500 ml-1">· NIS {st.nis}</span>
+                                <span className="font-mono text-slate-500 ml-1">
+                                  · NIS {st.nis}
+                                </span>
                               )}
                               {st?.class_name && (
                                 <span className="text-slate-400 ml-1">· Kelas {st.class_name}</span>

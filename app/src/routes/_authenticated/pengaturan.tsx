@@ -159,11 +159,11 @@ function Pengaturan() {
           }
         />
 
-        <TabsBarCard
-          value={activeTab}
-          onValueChange={setActiveTab}
-        >
-          <TabsTrigger value="profil" className="rounded-full px-4 text-xs font-semibold sm:text-sm">
+        <TabsBarCard value={activeTab} onValueChange={setActiveTab}>
+          <TabsTrigger
+            value="profil"
+            className="rounded-full px-4 text-xs font-semibold sm:text-sm"
+          >
             Profil Sekolah
           </TabsTrigger>
           <TabsTrigger value="spp" className="rounded-full px-4 text-xs font-semibold sm:text-sm">
@@ -172,10 +172,16 @@ function Pengaturan() {
           <TabsTrigger value="bank" className="rounded-full px-4 text-xs font-semibold sm:text-sm">
             Rekening Bank
           </TabsTrigger>
-          <TabsTrigger value="tahun-ajaran" className="rounded-full px-4 text-xs font-semibold sm:text-sm">
+          <TabsTrigger
+            value="tahun-ajaran"
+            className="rounded-full px-4 text-xs font-semibold sm:text-sm"
+          >
             Tahun Ajaran
           </TabsTrigger>
-          <TabsTrigger value="kategori" className="rounded-full px-4 text-xs font-semibold sm:text-sm">
+          <TabsTrigger
+            value="kategori"
+            className="rounded-full px-4 text-xs font-semibold sm:text-sm"
+          >
             Kategori Tagihan
           </TabsTrigger>
           <TabsTrigger value="audit" className="rounded-full px-4 text-xs font-semibold sm:text-sm">

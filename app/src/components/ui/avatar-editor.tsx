@@ -1,21 +1,21 @@
-import { useRef, useState } from "react"
-import { Link2, UploadCloud, X } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
-import { Button } from "./button"
-import { Input } from "./input"
-import { cn } from "@/lib/utils"
+import { useRef, useState } from "react";
+import { Link2, UploadCloud, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Button } from "./button";
+import { Input } from "./input";
+import { cn } from "@/lib/utils";
 
 interface AvatarEditorProps {
-  value: string
-  alt?: string
-  initials?: string
-  onUpload: (file: File) => Promise<string>
-  onUrlApplied: (url: string) => void
-  className?: string
+  value: string;
+  alt?: string;
+  initials?: string;
+  onUpload: (file: File) => Promise<string>;
+  onUrlApplied: (url: string) => void;
+  className?: string;
 }
 
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-const MAX_SIZE_BYTES = 10 * 1024 * 1024
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
 /**
  * Komponen editor foto profil (unggah langsung / via URL).
@@ -29,44 +29,44 @@ export function AvatarEditor({
   onUrlApplied,
   className,
 }: AvatarEditorProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [showUrl, setShowUrl] = useState(false)
-  const [urlDraft, setUrlDraft] = useState(value || "")
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showUrl, setShowUrl] = useState(false);
+  const [urlDraft, setUrlDraft] = useState(value || "");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleFile(file: File | null | undefined) {
-    if (!file) return
+    if (!file) return;
     if (ACCEPTED_TYPES.indexOf(file.type) === -1) {
-      setError("Format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.")
-      return
+      setError("Format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
+      return;
     }
     if (file.size > MAX_SIZE_BYTES) {
-      setError("Ukuran file terlalu besar. Maksimal 10 MB.")
-      return
+      setError("Ukuran file terlalu besar. Maksimal 10 MB.");
+      return;
     }
-    setError(null)
-    setUploading(true)
+    setError(null);
+    setUploading(true);
     try {
-      const res = await onUpload(file)
-      onUrlApplied(res)
-      setUrlDraft(res)
+      const res = await onUpload(file);
+      onUrlApplied(res);
+      setUrlDraft(res);
     } catch (e: unknown) {
-      setError((e as Error).message || "Gagal mengunggah foto.")
+      setError((e as Error).message || "Gagal mengunggah foto.");
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
   }
 
   function applyUrl() {
-    const u = urlDraft.trim()
+    const u = urlDraft.trim();
     if (!u) {
-      setError("Masukkan URL foto terlebih dahulu.")
-      return
+      setError("Masukkan URL foto terlebih dahulu.");
+      return;
     }
-    setError(null)
-    onUrlApplied(u)
-    setShowUrl(false)
+    setError(null);
+    onUrlApplied(u);
+    setShowUrl(false);
   }
 
   return (
@@ -93,8 +93,8 @@ export function AvatarEditor({
           accept={ACCEPTED_TYPES.join(",")}
           className="hidden"
           onChange={(e) => {
-            handleFile(e.target.files?.[0])
-            e.target.value = ""
+            handleFile(e.target.files?.[0]);
+            e.target.value = "";
           }}
         />
       </div>
@@ -123,15 +123,15 @@ export function AvatarEditor({
               type="url"
               value={urlDraft}
               onChange={(e) => {
-                setUrlDraft(e.target.value)
-                setError(null)
+                setUrlDraft(e.target.value);
+                setError(null);
               }}
               placeholder="https://example.com/foto.jpg"
               className="h-9 text-xs"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault()
-                  applyUrl()
+                  e.preventDefault();
+                  applyUrl();
                 }
               }}
             />
@@ -142,8 +142,8 @@ export function AvatarEditor({
           <button
             type="button"
             onClick={() => {
-              setShowUrl(false)
-              setError(null)
+              setShowUrl(false);
+              setError(null);
             }}
             className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -159,5 +159,5 @@ export function AvatarEditor({
         WebP, atau GIF · maksimal 10 MB.
       </p>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
-import { toast } from "sonner"
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   Activity,
   CalendarDays,
@@ -15,35 +15,35 @@ import {
   Upload,
   Users,
   Wallet,
-} from "lucide-react"
+} from "lucide-react";
 
-import { AppShell } from "@/components/AppShell"
+import { AppShell } from "@/components/AppShell";
 import {
   dashboardSummary,
   monthlyTrend,
   generateSppInvoices,
   parentDashboard,
-} from "@/lib/api/dashboard"
-import { listAuditLogs } from "@/lib/api/audit"
-import { getSchoolProfile, submitPayment } from "@/lib/api/payments"
-import { fileToDataUrl } from "@/lib/proof"
-import { useAuth } from "@/lib/useAuth"
-import { rupiah, tanggal, BULAN } from "@/lib/format"
-import { currentSemester } from "@/lib/semester"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/lib/api/dashboard";
+import { listAuditLogs } from "@/lib/api/audit";
+import { getSchoolProfile, submitPayment } from "@/lib/api/payments";
+import { fileToDataUrl } from "@/lib/proof";
+import { useAuth } from "@/lib/useAuth";
+import { rupiah, tanggal, BULAN } from "@/lib/format";
+import { currentSemester } from "@/lib/semester";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Modal } from "@/components/ui/modal"
-import { EmptyState } from "@/components/ui/empty-state"
-import { PageLoader } from "@/components/ui/page-loader"
+} from "@/components/ui/select";
+import { Modal } from "@/components/ui/modal";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageLoader } from "@/components/ui/page-loader";
 import {
   PageHeaderCard,
   StatCard,
@@ -56,7 +56,7 @@ import {
   type AttentionItem,
   type DonutItem,
   type BreakdownRow,
-} from "@/components/shared"
+} from "@/components/shared";
 
 export const Route = createFileRoute("/_authenticated/beranda")({
   ssr: false,
@@ -77,41 +77,42 @@ export const Route = createFileRoute("/_authenticated/beranda")({
     ],
   }),
   component: Beranda,
-})
+});
 
 type Invoice = {
-  id: string
-  student_id: string
-  type?: "spp" | "non_spp" | "event"
-  title: string
-  period_month?: number | null
-  period_year?: number | null
-  amount: number
-  paid_amount: number
-  status: string
-  allow_installment: boolean
-  created_at: Date
-}
+  id: string;
+  student_id: string;
+  type?: "spp" | "non_spp" | "event";
+  title: string;
+  period_month?: number | null;
+  period_year?: number | null;
+  amount: number;
+  paid_amount: number;
+  status: string;
+  allow_installment: boolean;
+  created_at: Date;
+};
 
 type DashboardSummary = {
-  students: number
-  outstanding: number
-  masuk: number
-  qris: number
-  offline: number
-  infaq: number
-  keluar: number
-  pending?: number
-}
+  students: number;
+  outstanding: number;
+  masuk: number;
+  qris: number;
+  offline: number;
+  infaq: number;
+  keluar: number;
+  pending?: number;
+};
 
-const GANJIL = [7, 8, 9, 10, 11, 12]
-const GENAP = [1, 2, 3, 4, 5, 6]
+const GANJIL = [7, 8, 9, 10, 11, 12];
+const GENAP = [1, 2, 3, 4, 5, 6];
 
 function Beranda() {
-  const { role, user, loading, isAdmin } = useAuth()
-  const semester = currentSemester()
-  const [generating, setGenerating] = useState(false)
-  const [payInvoice, setPayInvoice] = useState<Invoice | null>(null)
+  const { role, user, loading, isAdmin } = useAuth();
+  const semester = currentSemester();
+  const [generating, setGenerating] = useState(false);
+  const [payInvoice, setPayInvoice] = useState<Invoice | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
 
   const admin = useQuery({
     queryKey: ["beranda-admin", semester.key, user?.id],
@@ -120,63 +121,63 @@ function Beranda() {
       const [summary, trend] = await Promise.all([
         dashboardSummary({ data: { from: semester.from, to: semester.to } }),
         monthlyTrend({ data: { months: 6 } }),
-      ])
+      ]);
       return {
         summary: summary as unknown as DashboardSummary,
         trend,
-      }
+      };
     },
-  })
+  });
 
   const audit = useQuery({
     queryKey: ["recent-audit-beranda", user?.id],
     enabled: isAdmin,
     queryFn: () => listAuditLogs({ data: { page: 1, pageSize: 5 } }),
-  })
+  });
 
   const parent = useQuery({
     queryKey: ["beranda-parent", user?.id],
     enabled: role === "parent",
     queryFn: () => parentDashboard(),
-  })
+  });
 
   const generateSpp = async () => {
-    setGenerating(true)
-    const now = new Date()
+    setGenerating(true);
+    const now = new Date();
     try {
       const count = await generateSppInvoices({
         data: { year: now.getFullYear(), month: now.getMonth() + 1 },
-      })
-      toast.success(`${count ?? 0} tagihan SPP bulan ini dibuat`)
-      void admin.refetch()
+      });
+      toast.success(`${count ?? 0} tagihan SPP bulan ini dibuat`);
+      void admin.refetch();
     } catch (e) {
-      toast.error("Gagal membuat tagihan: " + (e as Error).message)
+      toast.error("Gagal membuat tagihan: " + (e as Error).message);
     } finally {
-      setGenerating(false)
+      setGenerating(false);
     }
-  }
+  };
 
-  if (loading) return <PageLoader />
+  if (loading) return <PageLoader />;
 
   const growthData = (admin.data?.trend ?? []).map((t) => ({
     date: `${BULAN[Number(t.month.slice(5, 7)) - 1] ?? t.month} ${t.month.slice(0, 4)}`,
     total: t.total,
-  }))
+  }));
 
-  const rawTrend = admin.data?.trend ?? []
-  let deltaPct: number | null = null
+  const rawTrend = admin.data?.trend ?? [];
+  let deltaPct: number | null = null;
   if (rawTrend.length >= 2) {
-    const curr = rawTrend[rawTrend.length - 1]?.total ?? 0
-    const prev = rawTrend[rawTrend.length - 2]?.total ?? 0
+    const curr = rawTrend[rawTrend.length - 1]?.total ?? 0;
+    const prev = rawTrend[rawTrend.length - 2]?.total ?? 0;
     if (prev > 0) {
-      deltaPct = Math.round(((curr - prev) / prev) * 100)
+      deltaPct = Math.round(((curr - prev) / prev) * 100);
     }
   }
 
-  const masuk = admin.data?.summary.masuk ?? 0
-  const keluar = admin.data?.summary.keluar ?? 0
-  const saldo = masuk - keluar
-  const pendingCount = admin.data?.summary.pending ?? 0
+  const masuk = admin.data?.summary.masuk ?? 0;
+  const keluar = admin.data?.summary.keluar ?? 0;
+  const saldo = masuk - keluar;
+  const pendingCount = admin.data?.summary.pending ?? 0;
 
   const attentionItems: AttentionItem[] = [
     {
@@ -207,7 +208,7 @@ function Beranda() {
       tone: "emerald",
       href: "/siswa",
     },
-  ]
+  ];
 
   const donutItems: DonutItem[] = [
     {
@@ -225,7 +226,7 @@ function Beranda() {
       value: admin.data?.summary.infaq ?? 0,
       color: "#D4A853",
     },
-  ]
+  ];
 
   const breakdownRows: BreakdownRow[] = [
     {
@@ -246,7 +247,7 @@ function Beranda() {
       sub: "Penerimaan minus pengeluaran",
       total: Math.max(0, saldo),
     },
-  ]
+  ];
 
   const recentLogs = (audit.data?.rows ?? []).map((r) => ({
     id: String(r.id),
@@ -254,7 +255,7 @@ function Beranda() {
     entity_type: r.entity_type || "system",
     user_username: r.full_name || r.username || "Admin",
     created_at: String(r.created_at),
-  }))
+  }));
 
   return (
     <AppShell
@@ -327,9 +328,7 @@ function Beranda() {
                 label="Menunggu Verifikasi"
                 value={`${pendingCount} Transaksi`}
                 sub={
-                  pendingCount > 0
-                    ? "Ada pembayaran butuh konfirmasi"
-                    : "Semua pembayaran selesai"
+                  pendingCount > 0 ? "Ada pembayaran butuh konfirmasi" : "Semua pembayaran selesai"
                 }
                 icon={Clock}
                 chip="bg-amber-500"
@@ -415,156 +414,201 @@ function Beranda() {
 
             {(parent.data?.students ?? []).length > 0 && (
               <div className="space-y-6">
-                {(parent.data?.students ?? []).map((s) => {
-                  const studentInvoices = (parent.data?.invoices ?? []).filter(
-                    (i) => i.student_id === s.id,
-                  )
-                  const sisa = studentInvoices
-                    .filter((i) => i.status === "unpaid" || i.status === "partial")
-                    .reduce((sum, i) => sum + (i.amount - i.paid_amount), 0)
+                {(parent.data?.students ?? []).length > 1 && (
+                  <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudentId("all")}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+                        selectedStudentId === "all"
+                          ? "bg-white text-emerald-800 shadow-xs font-bold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      Semua Santri ({(parent.data?.students ?? []).length})
+                    </button>
+                    {(parent.data?.students ?? []).map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setSelectedStudentId(st.id)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+                          selectedStudentId === st.id
+                            ? "bg-white text-emerald-800 shadow-xs font-bold"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        {st.full_name} ({st.class_name ?? "Santri"})
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  const nowYear = new Date().getFullYear()
-                  const sppInvoices = studentInvoices.filter(
-                    (i) =>
-                      (!i.type || i.type === "spp") &&
-                      (i.period_year === null || i.period_year === nowYear),
-                  )
+                {(parent.data?.students ?? [])
+                  .filter((s) => selectedStudentId === "all" || s.id === selectedStudentId)
+                  .map((s) => {
+                    const studentInvoices = (parent.data?.invoices ?? []).filter(
+                      (i) => i.student_id === s.id,
+                    );
+                    const sisa = studentInvoices
+                      .filter((i) => i.status === "unpaid" || i.status === "partial")
+                      .reduce((sum, i) => sum + (i.amount - i.paid_amount), 0);
 
-                  const sppByMonth = (m: number) => sppInvoices.find((i) => i.period_month === m)
+                    const nowYear = new Date().getFullYear();
+                    const sppInvoices = studentInvoices.filter(
+                      (i) =>
+                        (!i.type || i.type === "spp") &&
+                        (i.period_year === null || i.period_year === nowYear),
+                    );
 
-                  const renderMonthCell = (m: number) => {
-                    const inv = sppByMonth(m)
-                    if (!inv) {
+                    const sppByMonth = (m: number) => sppInvoices.find((i) => i.period_month === m);
+
+                    const renderMonthCell = (m: number) => {
+                      const inv = sppByMonth(m);
+                      if (!inv) {
+                        return (
+                          <div className="flex flex-col items-center gap-1 rounded-xl border border-slate-100 bg-slate-50/60 p-2 text-center">
+                            <p className="text-[11px] font-medium text-slate-500">{BULAN[m - 1]}</p>
+                            <p className="text-[11px] text-slate-400">—</p>
+                          </div>
+                        );
+                      }
+                      const isPaid = inv.status === "paid";
+                      const isPartial = inv.status === "partial";
+                      const badgeClass = isPaid
+                        ? "border-emerald-primary/30 bg-emerald-light/60 text-emerald-primary"
+                        : isPartial
+                          ? "border-gold-accent/40 bg-gold-bg text-gold-dark"
+                          : "border-slate-200 bg-white text-slate-600";
                       return (
-                        <div className="flex flex-col items-center gap-1 rounded-xl border border-slate-100 bg-slate-50/60 p-2 text-center">
-                          <p className="text-[11px] font-medium text-slate-500">{BULAN[m - 1]}</p>
-                          <p className="text-[11px] text-slate-400">—</p>
+                        <div
+                          className={`flex flex-col items-center gap-0.5 rounded-xl border p-2 text-center transition-shadow ${badgeClass}`}
+                        >
+                          <p className="text-[11px] font-medium">{BULAN[m - 1]}</p>
+                          <p className="font-mono text-xs font-bold">
+                            {isPaid ? "Lunas" : isPartial ? "Cicilan" : "Belum"}
+                          </p>
+                          <p className="text-[10px] tabular-nums opacity-80">
+                            {rupiah(inv.paid_amount)}
+                          </p>
                         </div>
-                      )
-                    }
-                    const isPaid = inv.status === "paid"
-                    const isPartial = inv.status === "partial"
-                    const badgeClass = isPaid
-                      ? "border-emerald-primary/30 bg-emerald-light/60 text-emerald-primary"
-                      : isPartial
-                        ? "border-gold-accent/40 bg-gold-bg text-gold-dark"
-                        : "border-slate-200 bg-white text-slate-600"
+                      );
+                    };
+
                     return (
                       <div
-                        className={`flex flex-col items-center gap-0.5 rounded-xl border p-2 text-center transition-shadow ${badgeClass}`}
+                        key={s.id}
+                        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6"
                       >
-                        <p className="text-[11px] font-medium">{BULAN[m - 1]}</p>
-                        <p className="font-mono text-xs font-bold">
-                          {isPaid ? "Lunas" : isPartial ? "Cicilan" : "Belum"}
-                        </p>
-                        <p className="text-[10px] tabular-nums opacity-80">
-                          {rupiah(inv.paid_amount)}
-                        </p>
-                      </div>
-                    )
-                  }
-
-                  return (
-                    <div
-                      key={s.id}
-                      className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div>
-                          <p className="font-heading text-lg font-bold text-slate-900">
-                            {s.full_name}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            NIS {s.nis} · {s.class_name ?? "-"}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-slate-500">Sisa Tagihan Belum Dibayar</p>
-                          <p className="text-xl font-bold tabular-nums text-rose-danger">
-                            {rupiah(sisa)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Status SPP 12 Bulan (Tahun Berjalan) */}
-                      <div className="mt-4 space-y-3">
-                        <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-slate-600">
-                          Peta Status SPP 12 Bulan ({nowYear})
-                        </h3>
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                            <p className="mb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
-                              Semester Ganjil (Juli – Desember)
+                        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
+                          <div>
+                            <p className="font-heading text-lg font-bold text-slate-900">
+                              {s.full_name}
                             </p>
-                            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
-                              {GANJIL.map((m) => renderMonthCell(m))}
-                            </div>
+                            <p className="text-xs text-slate-500">
+                              NIS {s.nis} · {s.class_name ?? "-"}
+                            </p>
                           </div>
-                          <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                            <p className="mb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
-                              Semester Genap (Januari – Juni)
+                          <div className="text-right">
+                            <p className="text-xs text-slate-500">Sisa Tagihan Belum Dibayar</p>
+                            <p className="text-xl font-bold tabular-nums text-rose-danger">
+                              {rupiah(sisa)}
                             </p>
-                            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
-                              {GENAP.map((m) => renderMonthCell(m))}
+                          </div>
+                        </div>
+
+                        {/* Status SPP 12 Bulan (Tahun Berjalan) */}
+                        <div className="mt-4 space-y-3">
+                          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-slate-600">
+                            Peta Status SPP 12 Bulan ({nowYear})
+                          </h3>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+                              <p className="mb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                                Semester Ganjil (Juli – Desember)
+                              </p>
+                              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+                                {GANJIL.map((m) => renderMonthCell(m))}
+                              </div>
+                            </div>
+                            <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+                              <p className="mb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                                Semester Genap (Januari – Juni)
+                              </p>
+                              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+                                {GENAP.map((m) => renderMonthCell(m))}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Daftar Tagihan */}
-                      <div className="mt-5 space-y-2">
-                        <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-slate-600">
-                          Rincian Tagihan
-                        </h3>
-                        {studentInvoices.length === 0 ? (
-                          <p className="text-xs text-slate-400">Belum ada tagihan.</p>
-                        ) : (
-                          <div className="divide-y divide-slate-100">
-                            {studentInvoices.map((inv) => {
-                              const sisaItem = inv.amount - inv.paid_amount
-                              const lunas = inv.status === "paid"
-                              return (
-                                <div
-                                  key={inv.id}
-                                  className="flex flex-wrap items-center justify-between gap-3 py-3"
-                                >
-                                  <div>
-                                    <p className="text-sm font-medium text-slate-900">
-                                      {inv.title}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                      {inv.period_month
-                                        ? `${BULAN[inv.period_month - 1]} ${inv.period_year ?? ""}`
-                                        : "Non-bulanan"}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <div className="text-right">
-                                      <p className="font-mono text-sm font-semibold tabular-nums">
-                                        {rupiah(inv.amount)}
+                        {/* Daftar Tagihan */}
+                        <div className="mt-5 space-y-2">
+                          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-slate-600">
+                            Rincian Tagihan
+                          </h3>
+                          {studentInvoices.length === 0 ? (
+                            <p className="text-xs text-slate-400">Belum ada tagihan.</p>
+                          ) : (
+                            <div className="divide-y divide-slate-100">
+                              {studentInvoices.map((inv) => {
+                                const sisaItem = inv.amount - inv.paid_amount;
+                                const lunas = inv.status === "paid";
+                                return (
+                                  <div
+                                    key={inv.id}
+                                    className="flex flex-wrap items-center justify-between gap-3 py-3"
+                                  >
+                                    <div>
+                                      <p className="text-sm font-medium text-slate-900">
+                                        {inv.title}
                                       </p>
-                                      {!lunas && inv.paid_amount > 0 && (
-                                        <p className="text-[11px] text-slate-500">
-                                          Sisa: {rupiah(sisaItem)}
+                                      <p className="text-xs text-slate-500">
+                                        {inv.period_month
+                                          ? `${BULAN[inv.period_month - 1]} ${inv.period_year ?? ""}`
+                                          : "Non-bulanan"}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <div className="text-right">
+                                        <p className="font-mono text-sm font-semibold tabular-nums">
+                                          {rupiah(inv.amount)}
                                         </p>
+                                        {!lunas && inv.paid_amount > 0 && (
+                                          <p className="text-[11px] text-slate-500">
+                                            Sisa: {rupiah(sisaItem)}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <PaymentStatusBadge
+                                        status={inv.status}
+                                        label={
+                                          lunas
+                                            ? "Lunas"
+                                            : inv.status === "partial"
+                                              ? "Cicilan"
+                                              : "Belum Bayar"
+                                        }
+                                      />
+                                      {!lunas && (
+                                        <Button
+                                          size="sm"
+                                          className="h-8 rounded-full px-3 text-xs"
+                                          onClick={() => setPayInvoice(inv as Invoice)}
+                                        >
+                                          Bayar
+                                        </Button>
                                       )}
                                     </div>
-                                    <PaymentStatusBadge status={inv.status} label={lunas ? "Lunas" : inv.status === "partial" ? "Cicilan" : "Belum Bayar"} />
-                                    {!lunas && (
-                                      <Button size="sm" className="h-8 rounded-full px-3 text-xs" onClick={() => setPayInvoice(inv as Invoice)}>
-                                        Bayar
-                                      </Button>
-                                    )}
                                   </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    );
+                  })}
               </div>
             )}
           </>
@@ -576,13 +620,13 @@ function Beranda() {
           invoice={payInvoice}
           onClose={() => setPayInvoice(null)}
           onSuccess={() => {
-            setPayInvoice(null)
-            void parent.refetch()
+            setPayInvoice(null);
+            void parent.refetch();
           }}
         />
       )}
     </AppShell>
-  )
+  );
 }
 
 function PayModal({
@@ -590,52 +634,52 @@ function PayModal({
   onClose,
   onSuccess,
 }: {
-  invoice: Invoice
-  onClose: () => void
-  onSuccess: () => void
+  invoice: Invoice;
+  onClose: () => void;
+  onSuccess: () => void;
 }) {
-  const [method, setMethod] = useState<"qris" | "offline">("qris")
+  const [method, setMethod] = useState<"qris" | "offline">("qris");
   const [amount, setAmount] = useState<string>(
     String(invoice.allow_installment ? 50000 : invoice.amount - invoice.paid_amount),
-  )
-  const [infaq, setInfaq] = useState<string>("0")
-  const [proofFile, setProofFile] = useState<File | null>(null)
-  const [notes, setNotes] = useState<string>("")
-  const [submitting, setSubmitting] = useState(false)
+  );
+  const [infaq, setInfaq] = useState<string>("0");
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [notes, setNotes] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
 
   const profile = useQuery({
     queryKey: ["school-profile-pay"],
     queryFn: () => getSchoolProfile(),
-  })
+  });
 
-  const sisa = invoice.amount - invoice.paid_amount
-  const numAmount = Number(amount) || 0
-  const numInfaq = Number(infaq) || 0
-  const grandTotal = numAmount + numInfaq
+  const sisa = invoice.amount - invoice.paid_amount;
+  const numAmount = Number(amount) || 0;
+  const numInfaq = Number(infaq) || 0;
+  const grandTotal = numAmount + numInfaq;
 
   const submit = async () => {
     if (numAmount <= 0) {
-      toast.error("Nominal pembayaran harus lebih dari 0")
-      return
+      toast.error("Nominal pembayaran harus lebih dari 0");
+      return;
     }
     if (numAmount > sisa) {
-      toast.error(`Nominal melebihi sisa tagihan (${rupiah(sisa)})`)
-      return
+      toast.error(`Nominal melebihi sisa tagihan (${rupiah(sisa)})`);
+      return;
     }
     if (!invoice.allow_installment && numAmount !== sisa) {
-      toast.error(`Tagihan ini tidak memperbolehkan cicilan. Harus bayar penuh ${rupiah(sisa)}`)
-      return
+      toast.error(`Tagihan ini tidak memperbolehkan cicilan. Harus bayar penuh ${rupiah(sisa)}`);
+      return;
     }
     if (method === "offline" && !proofFile) {
-      toast.error("Wajib mengunggah bukti transfer / pembayaran")
-      return
+      toast.error("Wajib mengunggah bukti transfer / pembayaran");
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
-      let proofUrl: string | undefined
+      let proofUrl: string | undefined;
       if (proofFile) {
-        proofUrl = await fileToDataUrl(proofFile)
+        proofUrl = await fileToDataUrl(proofFile);
       }
       await submitPayment({
         data: {
@@ -646,19 +690,19 @@ function PayModal({
           proof_url: proofUrl,
           note: notes.trim() || undefined,
         },
-      })
+      });
       toast.success(
         method === "qris"
           ? "Pembayaran berhasil diproses"
           : "Bukti transfer berhasil diajukan, menunggu konfirmasi admin",
-      )
-      onSuccess()
+      );
+      onSuccess();
     } catch (e) {
-      toast.error("Gagal memproses pembayaran: " + (e as Error).message)
+      toast.error("Gagal memproses pembayaran: " + (e as Error).message);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <Modal
@@ -706,7 +750,8 @@ function PayModal({
               <div className="mt-1 text-xs text-slate-800">
                 <span className="font-bold">{profile.data.bank_name || "Bank"}</span> —{" "}
                 <span className="font-mono font-semibold">{profile.data.bank_account_number}</span>{" "}
-                a.n. <span className="font-semibold">{profile.data.bank_account_name || "Sekolah"}</span>
+                a.n.{" "}
+                <span className="font-semibold">{profile.data.bank_account_name || "Sekolah"}</span>
               </div>
             ) : (
               <p className="mt-1 text-xs text-amber-600">
@@ -719,7 +764,8 @@ function PayModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">
-              Nominal Bayar (Rp) {invoice.allow_installment && <span className="text-slate-400">· bisa dicicil</span>}
+              Nominal Bayar (Rp){" "}
+              {invoice.allow_installment && <span className="text-slate-400">· bisa dicicil</span>}
             </Label>
             <Input
               type="number"
@@ -752,7 +798,8 @@ function PayModal({
               {rupiah(grandTotal)}
             </p>
             <p className="mt-2 text-[11px] text-slate-500">
-              Setelah menekan Bayar, sistem simulasi QRIS akan memvalidasi pembayaran Anda secara instan.
+              Setelah menekan Bayar, sistem simulasi QRIS akan memvalidasi pembayaran Anda secara
+              instan.
             </p>
           </div>
         ) : (
@@ -765,9 +812,7 @@ function PayModal({
                 onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
               />
             </div>
-            {proofFile && (
-              <p className="mt-1 text-[11px] text-slate-500">File: {proofFile.name}</p>
-            )}
+            {proofFile && <p className="mt-1 text-[11px] text-slate-500">File: {proofFile.name}</p>}
           </div>
         )}
 
@@ -791,5 +836,5 @@ function PayModal({
         </div>
       </div>
     </Modal>
-  )
+  );
 }

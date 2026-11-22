@@ -54,16 +54,12 @@
       "indexes": {
         "academic_years_name_unique": {
           "name": "academic_years_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         },
         "academic_years_active_idx": {
           "name": "academic_years_active_idx",
-          "columns": [
-            "is_active"
-          ],
+          "columns": ["is_active"],
           "isUnique": false
         }
       },
@@ -128,23 +124,17 @@
       "indexes": {
         "audit_logs_user_idx": {
           "name": "audit_logs_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "audit_logs_action_idx": {
           "name": "audit_logs_action_idx",
-          "columns": [
-            "action"
-          ],
+          "columns": ["action"],
           "isUnique": false
         },
         "audit_logs_created_idx": {
           "name": "audit_logs_created_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -153,12 +143,8 @@
           "name": "audit_logs_user_id_users_id_fk",
           "tableFrom": "audit_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -217,9 +203,7 @@
       "indexes": {
         "bank_accounts_active_idx": {
           "name": "bank_accounts_active_idx",
-          "columns": [
-            "is_active"
-          ],
+          "columns": ["is_active"],
           "isUnique": false
         }
       },
@@ -278,16 +262,12 @@
       "indexes": {
         "bill_categories_code_unique": {
           "name": "bill_categories_code_unique",
-          "columns": [
-            "code"
-          ],
+          "columns": ["code"],
           "isUnique": true
         },
         "bill_categories_active_idx": {
           "name": "bill_categories_active_idx",
-          "columns": [
-            "is_active"
-          ],
+          "columns": ["is_active"],
           "isUnique": false
         }
       },
@@ -369,9 +349,7 @@
       "indexes": {
         "events_deleted_idx": {
           "name": "events_deleted_idx",
-          "columns": [
-            "deleted_at"
-          ],
+          "columns": ["deleted_at"],
           "isUnique": false
         }
       },
@@ -568,47 +546,29 @@
       "indexes": {
         "invoices_spp_unique": {
           "name": "invoices_spp_unique",
-          "columns": [
-            "student_id",
-            "period_year",
-            "period_month"
-          ],
+          "columns": ["student_id", "period_year", "period_month"],
           "isUnique": true,
           "where": "\"invoices\".\"type\" = 'spp'"
         },
         "invoices_event_unique": {
           "name": "invoices_event_unique",
-          "columns": [
-            "student_id",
-            "event_id"
-          ],
+          "columns": ["student_id", "event_id"],
           "isUnique": true,
           "where": "\"invoices\".\"type\" = 'event'"
         },
         "invoices_student_deleted_idx": {
           "name": "invoices_student_deleted_idx",
-          "columns": [
-            "student_id",
-            "deleted_at"
-          ],
+          "columns": ["student_id", "deleted_at"],
           "isUnique": false
         },
         "invoices_type_period_idx": {
           "name": "invoices_type_period_idx",
-          "columns": [
-            "type",
-            "period_year",
-            "period_month",
-            "deleted_at"
-          ],
+          "columns": ["type", "period_year", "period_month", "deleted_at"],
           "isUnique": false
         },
         "invoices_status_idx": {
           "name": "invoices_status_idx",
-          "columns": [
-            "status",
-            "deleted_at"
-          ],
+          "columns": ["status", "deleted_at"],
           "isUnique": false
         }
       },
@@ -617,12 +577,8 @@
           "name": "invoices_student_id_students_id_fk",
           "tableFrom": "invoices",
           "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -630,12 +586,8 @@
           "name": "invoices_event_id_events_id_fk",
           "tableFrom": "invoices",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -643,12 +595,8 @@
           "name": "invoices_deleted_by_users_id_fk",
           "tableFrom": "invoices",
           "tableTo": "users",
-          "columnsFrom": [
-            "deleted_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deleted_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -692,10 +640,7 @@
       "indexes": {
         "parent_students_parent_student_uq": {
           "name": "parent_students_parent_student_uq",
-          "columns": [
-            "parent_id",
-            "student_id"
-          ],
+          "columns": ["parent_id", "student_id"],
           "isUnique": true
         }
       },
@@ -704,12 +649,8 @@
           "name": "parent_students_parent_id_parents_id_fk",
           "tableFrom": "parent_students",
           "tableTo": "parents",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -717,12 +658,8 @@
           "name": "parent_students_student_id_students_id_fk",
           "tableFrom": "parent_students",
           "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -801,16 +738,12 @@
       "indexes": {
         "parents_user_idx": {
           "name": "parents_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "parents_username_idx": {
           "name": "parents_username_idx",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": false
         }
       },
@@ -819,12 +752,8 @@
           "name": "parents_user_id_users_id_fk",
           "tableFrom": "parents",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -990,42 +919,27 @@
       "indexes": {
         "payments_receipt_number_unique": {
           "name": "payments_receipt_number_unique",
-          "columns": [
-            "receipt_number"
-          ],
+          "columns": ["receipt_number"],
           "isUnique": true
         },
         "payments_invoice_created_idx": {
           "name": "payments_invoice_created_idx",
-          "columns": [
-            "invoice_id",
-            "created_at"
-          ],
+          "columns": ["invoice_id", "created_at"],
           "isUnique": false
         },
         "payments_status_deleted_idx": {
           "name": "payments_status_deleted_idx",
-          "columns": [
-            "status",
-            "deleted_at",
-            "created_at"
-          ],
+          "columns": ["status", "deleted_at", "created_at"],
           "isUnique": false
         },
         "payments_student_idx": {
           "name": "payments_student_idx",
-          "columns": [
-            "student_id",
-            "created_at"
-          ],
+          "columns": ["student_id", "created_at"],
           "isUnique": false
         },
         "payments_paidby_pending_idx": {
           "name": "payments_paidby_pending_idx",
-          "columns": [
-            "paid_by",
-            "status"
-          ],
+          "columns": ["paid_by", "status"],
           "isUnique": false
         }
       },
@@ -1034,12 +948,8 @@
           "name": "payments_invoice_id_invoices_id_fk",
           "tableFrom": "payments",
           "tableTo": "invoices",
-          "columnsFrom": [
-            "invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invoice_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1047,12 +957,8 @@
           "name": "payments_student_id_students_id_fk",
           "tableFrom": "payments",
           "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1060,12 +966,8 @@
           "name": "payments_paid_by_users_id_fk",
           "tableFrom": "payments",
           "tableTo": "users",
-          "columnsFrom": [
-            "paid_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["paid_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1073,12 +975,8 @@
           "name": "payments_confirmed_by_users_id_fk",
           "tableFrom": "payments",
           "tableTo": "users",
-          "columnsFrom": [
-            "confirmed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["confirmed_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1086,12 +984,8 @@
           "name": "payments_rejected_by_users_id_fk",
           "tableFrom": "payments",
           "tableTo": "users",
-          "columnsFrom": [
-            "rejected_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["rejected_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1099,12 +993,8 @@
           "name": "payments_voided_by_users_id_fk",
           "tableFrom": "payments",
           "tableTo": "users",
-          "columnsFrom": [
-            "voided_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["voided_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1252,24 +1142,17 @@
       "indexes": {
         "sessions_token_hash_unique": {
           "name": "sessions_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "isUnique": true
         },
         "sessions_user_expires_idx": {
           "name": "sessions_user_expires_idx",
-          "columns": [
-            "user_id",
-            "expires_at"
-          ],
+          "columns": ["user_id", "expires_at"],
           "isUnique": false
         },
         "sessions_token_idx": {
           "name": "sessions_token_idx",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "isUnique": false
         }
       },
@@ -1278,12 +1161,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1468,24 +1347,17 @@
       "indexes": {
         "students_nis_unique": {
           "name": "students_nis_unique",
-          "columns": [
-            "nis"
-          ],
+          "columns": ["nis"],
           "isUnique": true
         },
         "students_status_deleted_idx": {
           "name": "students_status_deleted_idx",
-          "columns": [
-            "status",
-            "deleted_at"
-          ],
+          "columns": ["status", "deleted_at"],
           "isUnique": false
         },
         "students_class_idx": {
           "name": "students_class_idx",
-          "columns": [
-            "class_name"
-          ],
+          "columns": ["class_name"],
           "isUnique": false
         }
       },
@@ -1494,12 +1366,8 @@
           "name": "students_deleted_by_users_id_fk",
           "tableFrom": "students",
           "tableTo": "users",
-          "columnsFrom": [
-            "deleted_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deleted_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1536,10 +1404,7 @@
       "indexes": {
         "user_roles_user_role_uq": {
           "name": "user_roles_user_role_uq",
-          "columns": [
-            "user_id",
-            "role"
-          ],
+          "columns": ["user_id", "role"],
           "isUnique": true
         }
       },
@@ -1548,12 +1413,8 @@
           "name": "user_roles_user_id_users_id_fk",
           "tableFrom": "user_roles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1640,16 +1501,12 @@
       "indexes": {
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         },
         "users_is_active_idx": {
           "name": "users_is_active_idx",
-          "columns": [
-            "is_active"
-          ],
+          "columns": ["is_active"],
           "isUnique": false
         }
       },

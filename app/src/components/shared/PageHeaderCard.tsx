@@ -1,23 +1,23 @@
-import type { ReactNode } from "react"
-import type { LucideIcon } from "lucide-react"
-import { DocTrigger } from "@/components/ui/doc-sheet"
-import { cn } from "@/lib/utils"
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
+import { DocTrigger } from "@/components/ui/doc-sheet";
+import { cn } from "@/lib/utils";
 
 export interface HeaderBlock {
-  icon: LucideIcon
-  label: string
-  value: ReactNode
-  active?: boolean
-  pulse?: boolean
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+  active?: boolean;
+  pulse?: boolean;
 }
 
 interface PageHeaderCardProps {
-  title: string
-  description?: ReactNode
-  action?: ReactNode
-  docKey?: string
-  blocks?: HeaderBlock[]
-  loading?: boolean
+  title: string;
+  description?: ReactNode;
+  action?: ReactNode;
+  docKey?: string;
+  blocks?: HeaderBlock[];
+  loading?: boolean;
 }
 
 /**
@@ -60,8 +60,8 @@ export default function PageHeaderCard({
           )}
         >
           {blocks.map((block) => {
-            const Icon = block.icon
-            const on = !!block.active
+            const Icon = block.icon;
+            const on = !!block.active;
             return (
               <div
                 key={block.label}
@@ -101,10 +101,10 @@ export default function PageHeaderCard({
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }

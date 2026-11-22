@@ -2,11 +2,7 @@
  * Membaca dan mengompres file bukti pembayaran di browser menjadi format WebP hemat ukuran (~50-80 KB).
  * Mendukung foto langsung dari kamera HP beresolusi tinggi tanpa membebani penyimpanan/database.
  */
-export async function fileToDataUrl(
-  file: File,
-  maxWidth = 800,
-  quality = 0.75,
-): Promise<string> {
+export async function fileToDataUrl(file: File, maxWidth = 800, quality = 0.75): Promise<string> {
   // Batas toleransi file asli sebelum kompresi (maksimal 15 MB)
   const MAX_ORIGINAL_BYTES = 15 * 1024 * 1024;
   if (file.size > MAX_ORIGINAL_BYTES) {

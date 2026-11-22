@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { getRequest } from "@tanstack/react-start/server";
 import { and, eq, gt } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -5,6 +6,12 @@ import { sessions, userRoles, users, type AppRole } from "../../../drizzle/schem
 import { randomToken, sha256Hex } from "./crypto";
 
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+export const testAuthStorage = new AsyncLocalStorage<{ token: string | null }>();
+
+export function setTestAuthToken<T>(token: string | null, fn: () => T): T {
+  return testAuthStorage.run({ token }, fn);
+}
 
 export interface AuthUser {
   id: string;
@@ -80,12 +87,28 @@ export function toAuthUser(user: typeof users.$inferSelect, roleList: AppRole[] 
 }
 
 export function getTokenFromRequest(): string | null {
-  const request = getRequest();
-  if (!request?.headers) return null;
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7).trim();
-  return token || null;
+  const testStore = testAuthStorage.getStore();
+  if (testStore) return testStore.token;
+
+  try {
+    const request = getRequest();
+    if (!request?.headers) return null;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7).trim();
+      if (token) return token;
+    }
+    const cookieHeader = request.headers.get("cookie");
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(?:^|; )spp_session=([^;]*)/);
+      if (match && match[1]) {
+        return decodeURIComponent(match[1]).trim() || null;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 async function requireUserInternal(required: AppRole[] | null): Promise<AuthUser> {

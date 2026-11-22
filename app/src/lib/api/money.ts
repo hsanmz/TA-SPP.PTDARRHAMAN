@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { invoices, payments } from "../../../drizzle/schema";
 
@@ -10,7 +10,13 @@ export async function recalcInvoice(invoiceId: string): Promise<void> {
   const row = await db
     .select({ total: sql<number>`coalesce(sum(${payments.amount}), 0)` })
     .from(payments)
-    .where(sql`${payments.invoice_id} = ${invoiceId} and ${payments.status} = 'confirmed'`)
+    .where(
+      and(
+        eq(payments.invoice_id, invoiceId),
+        eq(payments.status, "confirmed"),
+        isNull(payments.deleted_at),
+      ),
+    )
     .get();
   const paid = row?.total ?? 0;
   const status = paid <= 0 ? "unpaid" : paid >= invoice.amount ? "paid" : "partial";

@@ -1,8 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, desc, eq, isNull, like, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, like, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db/client";
-import { invoices, parents, parentStudents, payments, schoolSettings, students } from "../../../drizzle/schema";
+import {
+  invoices,
+  parents,
+  parentStudents,
+  payments,
+  schoolSettings,
+  students,
+} from "../../../drizzle/schema";
 import { requireAdmin, requireAuth } from "@/lib/backend/auth";
 import { logAudit } from "@/lib/backend/audit";
 import { buildReceiptNumber, recalcInvoice } from "./money";
@@ -27,9 +34,25 @@ export const listPayments = createServerFn({ method: "POST" })
     } else {
       conds.push(eq(payments.paid_by, user.id));
     }
+
+    // Search by receipt number, student name, or student NIS
     if (data.search?.trim()) {
-      conds.push(like(payments.receipt_number, `%${data.search.trim()}%`));
+      const q = `%${data.search.trim()}%`;
+      // Find matching student IDs first
+      const matchingStudents = await db
+        .select({ id: students.id })
+        .from(students)
+        .where(or(like(students.full_name, q), like(students.nis, q)))
+        .all();
+      const studentIds = matchingStudents.map((s) => s.id);
+
+      if (studentIds.length > 0) {
+        conds.push(or(like(payments.receipt_number, q), inArray(payments.student_id, studentIds))!);
+      } else {
+        conds.push(like(payments.receipt_number, q));
+      }
     }
+
     const conditions = and(...conds);
     const rows = await db
       .select()

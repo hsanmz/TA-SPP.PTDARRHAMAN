@@ -1,15 +1,15 @@
-import { useState, type FormEvent } from "react"
-import { Button } from "./button"
-import { Input } from "./input"
-import { Label } from "./label"
+import { useState, type FormEvent } from "react";
+import { Button } from "./button";
+import { Input } from "./input";
+import { Label } from "./label";
 
 type Props = {
-  apiBase: string
-  applicant?: boolean | "mixed"
-  onClose?: () => void
-  closeText?: string
-  title?: string
-}
+  apiBase: string;
+  applicant?: boolean | "mixed";
+  onClose?: () => void;
+  closeText?: string;
+  title?: string;
+};
 
 /**
  * Isi formulir pemulihan akun (logika & endpoint tetap sama seperti AuthRecovery).
@@ -22,63 +22,67 @@ export function AuthRecoveryForm({
   closeText = "Tutup",
   title = "Pulihkan akun",
 }: Props) {
-  const [identifier, setIdentifier] = useState("")
-  const [birthDate, setBirthDate] = useState("")
-  const [code, setCode] = useState("")
-  const [sent, setSent] = useState(false)
-  const [finished, setFinished] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState("")
-  const [error, setError] = useState("")
-  const [accountType, setAccountType] = useState<"applicant" | "staff">(applicant === true ? "applicant" : "staff")
+  const [identifier, setIdentifier] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [code, setCode] = useState("");
+  const [sent, setSent] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [accountType, setAccountType] = useState<"applicant" | "staff">(
+    applicant === true ? "applicant" : "staff",
+  );
 
-  const isApplicant = applicant === true || (applicant === "mixed" && accountType === "applicant")
+  const isApplicant = applicant === true || (applicant === "mixed" && accountType === "applicant");
 
   function reset() {
-    setIdentifier("")
-    setCode("")
-    setBirthDate("")
-    setSent(false)
-    setFinished(false)
-    setMessage("")
-    setError("")
+    setIdentifier("");
+    setCode("");
+    setBirthDate("");
+    setSent(false);
+    setFinished(false);
+    setMessage("");
+    setError("");
   }
 
   async function submit(event: FormEvent) {
-    event.preventDefault()
-    setBusy(true)
-    setError("")
-    setMessage("")
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
     try {
       const endpoint = isApplicant
         ? "/auth/recover-applicant"
         : sent
           ? "/auth/recovery/verify"
-          : "/auth/recovery/request"
+          : "/auth/recovery/request";
       const payload = isApplicant
         ? { nik: identifier, birth_date: birthDate }
         : sent
           ? { identifier, code }
-          : { identifier }
+          : { identifier };
       const response = await fetch(`${apiBase}${endpoint}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      })
-      const body = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(body.detail || "Permintaan belum dapat diproses.")
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.detail || "Permintaan belum dapat diproses.");
       if (!isApplicant && !sent) {
-        setSent(true)
-        setMessage("Jika akun cocok, kode verifikasi dikirim ke WhatsApp terdaftar.")
+        setSent(true);
+        setMessage("Jika akun cocok, kode verifikasi dikirim ke WhatsApp terdaftar.");
       } else {
-        setMessage(body.message || "Jika data cocok, kredensial akan dikirim ke WhatsApp terdaftar.")
-        setFinished(true)
+        setMessage(
+          body.message || "Jika data cocok, kredensial akan dikirim ke WhatsApp terdaftar.",
+        );
+        setFinished(true);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Permintaan gagal.")
+      setError(e instanceof Error ? e.message : "Permintaan gagal.");
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
@@ -105,9 +109,9 @@ export function AuthRecoveryForm({
                 type="radio"
                 checked={accountType === "applicant"}
                 onChange={() => {
-                  setAccountType("applicant")
-                  setIdentifier("")
-                  setMessage("")
+                  setAccountType("applicant");
+                  setIdentifier("");
+                  setMessage("");
                 }}
               />
               Pendaftar
@@ -117,9 +121,9 @@ export function AuthRecoveryForm({
                 type="radio"
                 checked={accountType === "staff"}
                 onChange={() => {
-                  setAccountType("staff")
-                  setIdentifier("")
-                  setMessage("")
+                  setAccountType("staff");
+                  setIdentifier("");
+                  setMessage("");
                 }}
               />
               Admin
@@ -135,7 +139,10 @@ export function AuthRecoveryForm({
           </p>
         )}
         {error && (
-          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
             {error}
           </p>
         )}
@@ -198,13 +205,13 @@ export function AuthRecoveryForm({
           type="button"
           className="mt-4 w-full text-center text-sm text-muted-foreground hover:underline"
           onClick={() => {
-            onClose()
-            reset()
+            onClose();
+            reset();
           }}
         >
           {closeText}
         </button>
       ) : null}
     </>
-  )
+  );
 }

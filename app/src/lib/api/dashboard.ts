@@ -84,7 +84,6 @@ export const dashboardSummary = createServerFn({ method: "POST" })
       keluar: expenseRows.reduce((s, e) => s + e.amount, 0),
       pending: pendingRows?.n ?? 0,
     };
-
   });
 
 export const monthlyTrend = createServerFn({ method: "POST" })
