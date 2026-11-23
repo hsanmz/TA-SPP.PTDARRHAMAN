@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { and, eq, like, isNull } from "drizzle-orm";
+import { and, eq, like, isNull, inArray } from "drizzle-orm";
 import { db } from "../lib/db/client";
 import {
   users,
@@ -50,34 +50,30 @@ describe("END-TO-END ACCOUNT MANAGEMENT & SCENARIOS AUDIT", () => {
       .all();
     const testParentIds = testParents.map((p) => p.id);
 
-    // 3. Delete dependent records first (payments -> invoices -> parentStudents)
-    for (const sid of testStudentIds) {
-      await db.delete(payments).where(eq(payments.student_id, sid));
-      await db.delete(invoices).where(eq(invoices.student_id, sid));
-      await db.delete(parentStudents).where(eq(parentStudents.student_id, sid));
-    }
-    for (const pid of testParentIds) {
-      await db.delete(parentStudents).where(eq(parentStudents.parent_id, pid));
+    // 3. Batch delete dependent records using inArray
+    if (testStudentIds.length > 0) {
+      await db.delete(payments).where(inArray(payments.student_id, testStudentIds));
+      await db.delete(invoices).where(inArray(invoices.student_id, testStudentIds));
+      await db.delete(parentStudents).where(inArray(parentStudents.student_id, testStudentIds));
+      await db.delete(students).where(inArray(students.id, testStudentIds));
     }
 
-    // 4. Delete parents & students
-    for (const pid of testParentIds) {
-      await db.delete(parents).where(eq(parents.id, pid));
-    }
-    for (const sid of testStudentIds) {
-      await db.delete(students).where(eq(students.id, sid));
+    if (testParentIds.length > 0) {
+      await db.delete(parentStudents).where(inArray(parentStudents.parent_id, testParentIds));
+      await db.delete(parents).where(inArray(parents.id, testParentIds));
     }
 
-    // 5. Delete test users & user_roles
+    // 4. Batch delete test users & user_roles
     const testUsers = await db
       .select({ id: users.id })
       .from(users)
       .where(like(users.username, "wali_%_2026"))
       .all();
-    for (const u of testUsers) {
-      await db.delete(sessions).where(eq(sessions.user_id, u.id));
-      await db.delete(userRoles).where(eq(userRoles.user_id, u.id));
-      await db.delete(users).where(eq(users.id, u.id));
+    const testUserIds = testUsers.map((u) => u.id);
+    if (testUserIds.length > 0) {
+      await db.delete(sessions).where(inArray(sessions.user_id, testUserIds));
+      await db.delete(userRoles).where(inArray(userRoles.user_id, testUserIds));
+      await db.delete(users).where(inArray(users.id, testUserIds));
     }
   }
 
@@ -701,6 +697,249 @@ describe("END-TO-END ACCOUNT MANAGEMENT & SCENARIOS AUDIT", () => {
         .all();
 
       expect(s1Month8Invoices.length).toBe(1);
+    });
+  });
+
+  // =========================================================================
+  // SCENARIO 11: Parent Multi-Student Payment History & Kasir Offline Visibility
+  // =========================================================================
+  describe("Scenario 11: Wali Multi-Student Payment History & Kasir Visibility", () => {
+    let offlinePayId: string;
+    let onlinePayId: string;
+    let otherPayId: string;
+
+    it("Admin records offline cash payment at the desk for Student 1 (paid_by = Admin)", async () => {
+      const invOffline = await db
+        .insert(invoices)
+        .values({
+          student_id: student1Id,
+          type: "spp",
+          title: "SPP Agustus 2026 Student 1",
+          amount: 500_000,
+          paid_amount: 0,
+          status: "unpaid",
+          allow_installment: false,
+          created_at: new Date(),
+        })
+        .returning();
+
+      const inserted = await db
+        .insert(payments)
+        .values({
+          invoice_id: invOffline[0]!.id,
+          student_id: student1Id,
+          amount: 500_000,
+          infaq_amount: 10_000,
+          method: "offline",
+          status: "confirmed",
+          receipt_number: "KWT-TEST-OFFLINE-01",
+          paid_by: adminUserId, // Recorded by Admin at desk
+          confirmed_by: adminUserId,
+          confirmed_at: new Date(),
+          created_at: new Date(),
+        })
+        .returning();
+
+      expect(inserted.length).toBe(1);
+      offlinePayId = inserted[0]!.id;
+      await recalcInvoice(invOffline[0]!.id);
+
+      const inv1 = await db.select().from(invoices).where(eq(invoices.id, invOffline[0]!.id)).get();
+      expect(inv1!.paid_amount).toBe(500_000);
+      expect(inv1!.status).toBe("paid");
+    });
+
+    it("Parent A submits online QRIS payment for Student 2 (paid_by = Parent A)", async () => {
+      const inserted = await db
+        .insert(payments)
+        .values({
+          invoice_id: invoice2Id,
+          student_id: student2Id,
+          amount: 250_000,
+          infaq_amount: 5_000,
+          method: "qris",
+          status: "confirmed",
+          receipt_number: "KWT-TEST-ONLINE-02",
+          paid_by: parentAUserId,
+          confirmed_by: adminUserId,
+          confirmed_at: new Date(),
+          created_at: new Date(),
+        })
+        .returning();
+
+      expect(inserted.length).toBe(1);
+      onlinePayId = inserted[0]!.id;
+      await recalcInvoice(invoice2Id);
+    });
+
+    it("Records payment for Student B belonging to Parent B", async () => {
+      const invB = await db
+        .insert(invoices)
+        .values({
+          student_id: studentBId,
+          type: "spp",
+          title: "SPP Juli 2026 Student B",
+          amount: 500_000,
+          paid_amount: 0,
+          status: "unpaid",
+          allow_installment: false,
+          created_at: new Date(),
+        })
+        .returning();
+
+      const inserted = await db
+        .insert(payments)
+        .values({
+          invoice_id: invB[0]!.id,
+          student_id: studentBId,
+          amount: 500_000,
+          method: "offline",
+          status: "confirmed",
+          receipt_number: "KWT-TEST-OTHER-03",
+          paid_by: adminUserId,
+          confirmed_by: adminUserId,
+          confirmed_at: new Date(),
+          created_at: new Date(),
+        })
+        .returning();
+
+      otherPayId = inserted[0]!.id;
+    });
+
+    it("Queries Parent A payment history: sees offline cash & online payments for their children, strictly isolates other children", async () => {
+      // Find children linked to Parent A
+      const links = await db
+        .select({ studentId: parentStudents.student_id })
+        .from(parentStudents)
+        .where(eq(parentStudents.parent_id, parentAId))
+        .all();
+      const parentAStudentIds = links.map((l) => l.studentId);
+      expect(parentAStudentIds).toContain(student1Id);
+      expect(parentAStudentIds).toContain(student2Id);
+      expect(parentAStudentIds).not.toContain(studentBId);
+
+      // Query payments by inArray(payments.student_id, parentAStudentIds)
+      const parentAPayments = await db
+        .select({
+          id: payments.id,
+          receiptNumber: payments.receipt_number,
+          studentId: payments.student_id,
+          amount: payments.amount,
+          method: payments.method,
+          status: payments.status,
+          studentName: students.full_name,
+        })
+        .from(payments)
+        .leftJoin(students, eq(payments.student_id, students.id))
+        .where(and(inArray(payments.student_id, parentAStudentIds), isNull(payments.deleted_at)))
+        .all();
+
+      const payIds = parentAPayments.map((p) => p.id);
+
+      // CRITICAL ASSERTION: Parent sees offline payment recorded by Admin for Student 1
+      expect(payIds).toContain(offlinePayId);
+
+      // CRITICAL ASSERTION: Parent sees online payment for Student 2
+      expect(payIds).toContain(onlinePayId);
+
+      // CRITICAL ASSERTION (DATA ISOLATION): Parent A NEVER sees payment for Student B
+      expect(payIds).not.toContain(otherPayId);
+
+      // Verify joined student details are present
+      const offlinePay = parentAPayments.find((p) => p.id === offlinePayId);
+      expect(offlinePay?.studentName).toBe("Ahmad Fulan");
+    });
+  });
+
+  // =========================================================================
+  // SCENARIO 12: Atomic Double-Confirmation & Concurrency Race Defense
+  // =========================================================================
+  describe("Scenario 12: Atomic Double-Confirmation & Concurrency Race Defense", () => {
+    let racePayId: string;
+
+    it("Creates a pending payment for Student 2", async () => {
+      const inserted = await db
+        .insert(payments)
+        .values({
+          invoice_id: invoice2Id,
+          student_id: student2Id,
+          amount: 250_000,
+          infaq_amount: 0,
+          method: "qris",
+          status: "pending",
+          paid_by: parentAUserId,
+          created_at: new Date(),
+        })
+        .returning();
+
+      expect(inserted.length).toBe(1);
+      racePayId = inserted[0]!.id;
+    });
+
+    it("Atomic update: First confirmation succeeds with status = 'confirmed'", async () => {
+      const updated = await db
+        .update(payments)
+        .set({
+          status: "confirmed",
+          confirmed_at: new Date(),
+          confirmed_by: adminUserId,
+          receipt_number: "KWT-RACE-001",
+        })
+        .where(and(eq(payments.id, racePayId), eq(payments.status, "pending")))
+        .returning();
+
+      expect(updated.length).toBe(1);
+      expect(updated[0]!.status).toBe("confirmed");
+      await recalcInvoice(invoice2Id);
+    });
+
+    it("Atomic update: Second simultaneous confirmation fails (0 rows returned)", async () => {
+      // Trying to confirm again with status = 'pending' guard
+      const updatedAgain = await db
+        .update(payments)
+        .set({
+          status: "confirmed",
+          confirmed_at: new Date(),
+          confirmed_by: adminUserId,
+          receipt_number: "KWT-RACE-002",
+        })
+        .where(and(eq(payments.id, racePayId), eq(payments.status, "pending")))
+        .returning();
+
+      // STRICT CONCURRENCY GUARD: Must be 0 rows affected
+      expect(updatedAgain.length).toBe(0);
+    });
+
+    it("Atomic void: First void succeeds, second void returns 0 rows", async () => {
+      // First void on confirmed payment
+      const void1 = await db
+        .update(payments)
+        .set({
+          status: "voided",
+          voided_at: new Date(),
+          voided_by: adminUserId,
+          void_reason: "Kesalahan input",
+        })
+        .where(and(eq(payments.id, racePayId), eq(payments.status, "confirmed")))
+        .returning();
+
+      expect(void1.length).toBe(1);
+      expect(void1[0]!.status).toBe("voided");
+      await recalcInvoice(invoice2Id);
+
+      // Second void attempt fails
+      const void2 = await db
+        .update(payments)
+        .set({
+          status: "voided",
+          voided_at: new Date(),
+          voided_by: adminUserId,
+          void_reason: "Coba void lagi",
+        })
+        .where(and(eq(payments.id, racePayId), eq(payments.status, "confirmed")))
+        .returning();
+
+      expect(void2.length).toBe(0);
     });
   });
 });

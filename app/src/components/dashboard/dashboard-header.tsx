@@ -73,7 +73,7 @@ export function DashboardHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border",
+        "sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs",
         className,
       )}
     >

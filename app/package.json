@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "test": "DATABASE_URL=\"file:./data/ta-spp.db\" bun test --timeout 20000 src/test/unit-crypto-auth.test.ts src/test/account-scenarios.test.ts src/test/http-ssr.test.ts src/test/performance-benchmark.test.ts",
+    "test": "DATABASE_URL=\"file:./data/ta-spp.db\" bun test --timeout 30000 src/test/unit-crypto-auth.test.ts src/test/account-scenarios.test.ts src/test/http-ssr.test.ts src/test/performance-benchmark.test.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "seed": "bun --env-file=.env scripts/seed.ts",

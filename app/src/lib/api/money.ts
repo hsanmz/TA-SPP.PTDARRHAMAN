@@ -3,11 +3,14 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { invoices, payments } from "../../../drizzle/schema";
 
-export async function recalcInvoice(invoiceId: string): Promise<void> {
-  const invoice = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).get();
+export async function recalcInvoice(
+  invoiceId: string,
+  client: { select: any; update: any } = db,
+): Promise<void> {
+  const invoice = await client.select().from(invoices).where(eq(invoices.id, invoiceId)).get();
   if (!invoice) throw new Error("Tagihan tidak ditemukan.");
 
-  const row = await db
+  const row = await client
     .select({ total: sql<number>`coalesce(sum(${payments.amount}), 0)` })
     .from(payments)
     .where(
@@ -20,7 +23,7 @@ export async function recalcInvoice(invoiceId: string): Promise<void> {
     .get();
   const paid = row?.total ?? 0;
   const status = paid <= 0 ? "unpaid" : paid >= invoice.amount ? "paid" : "partial";
-  await db.update(invoices).set({ paid_amount: paid, status }).where(eq(invoices.id, invoiceId));
+  await client.update(invoices).set({ paid_amount: paid, status }).where(eq(invoices.id, invoiceId));
 }
 
 export function buildReceiptNumber(): string {

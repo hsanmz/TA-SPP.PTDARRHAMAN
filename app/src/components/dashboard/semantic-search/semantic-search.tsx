@@ -297,7 +297,7 @@ export function SemanticSearch({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden sm:flex items-center justify-between gap-2 rounded-xl border border-border/80 bg-background/60 hover:bg-muted/70 px-3 py-1.5 text-xs text-muted-foreground transition-all duration-150 hover:border-primary/40 hover:text-foreground shadow-2xs w-44 md:w-64 lg:w-72 group focus:outline-none focus:ring-2 focus:ring-primary/30"
+        className="hidden sm:flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50/80 px-3 py-1.5 text-xs text-muted-foreground transition-all duration-150 hover:border-primary/40 hover:text-foreground shadow-xs w-44 md:w-64 lg:w-72 group focus:outline-none focus:ring-2 focus:ring-primary/30"
         aria-label="Cari apa saja di dashboard..."
       >
         <span className="flex items-center gap-2 truncate min-w-0">
@@ -314,7 +314,7 @@ export function SemanticSearch({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="sm:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-border/80 bg-background/60 text-muted-foreground hover:bg-primary/10 hover:text-foreground transition-colors focus:outline-none"
+        className="sm:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-muted-foreground hover:bg-primary/10 hover:text-foreground transition-colors focus:outline-none shadow-xs"
         aria-label="Buka pencarian"
       >
         <Search className="h-4 w-4" />
@@ -326,10 +326,10 @@ export function SemanticSearch({
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content
             onKeyDown={handleKeyDown}
-            className="fixed left-1/2 top-[10%] sm:top-[15%] z-50 w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 rounded-2xl border border-border bg-background shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 overflow-hidden flex flex-col max-h-[80vh]"
+            className="fixed left-1/2 top-[10%] sm:top-[15%] z-50 w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 rounded-2xl border border-slate-200 bg-white shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 overflow-hidden flex flex-col max-h-[80vh]"
           >
             {/* Header Input Pencarian */}
-            <div className="relative flex items-center border-b border-border px-4 py-3 bg-muted/20">
+            <div className="relative flex items-center border-b border-slate-100 px-4 py-3 bg-slate-50/50">
               <Search className="h-5 w-5 text-muted-foreground shrink-0 mr-3" />
               <input
                 ref={inputRef}

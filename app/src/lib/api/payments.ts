@@ -32,7 +32,29 @@ export const listPayments = createServerFn({ method: "POST" })
     if (data.admin) {
       if (data.status) conds.push(eq(payments.status, data.status));
     } else {
-      conds.push(eq(payments.paid_by, user.id));
+      const parent = await db
+        .select({ id: parents.id })
+        .from(parents)
+        .where(and(eq(parents.user_id, user.id), isNull(parents.deleted_at)))
+        .get();
+
+      if (!parent) {
+        return { rows: [], total: 0 };
+      }
+
+      const links = await db
+        .select({ studentId: parentStudents.student_id })
+        .from(parentStudents)
+        .where(eq(parentStudents.parent_id, parent.id))
+        .all();
+
+      const studentIds = links.map((l) => l.studentId);
+      if (studentIds.length === 0) {
+        return { rows: [], total: 0 };
+      }
+
+      conds.push(inArray(payments.student_id, studentIds));
+      if (data.status) conds.push(eq(payments.status, data.status));
     }
 
     // Search by receipt number, student name, or student NIS
@@ -55,8 +77,34 @@ export const listPayments = createServerFn({ method: "POST" })
 
     const conditions = and(...conds);
     const rows = await db
-      .select()
+      .select({
+        id: payments.id,
+        invoice_id: payments.invoice_id,
+        student_id: payments.student_id,
+        amount: payments.amount,
+        infaq_amount: payments.infaq_amount,
+        method: payments.method,
+        status: payments.status,
+        proof_url: payments.proof_url,
+        note: payments.note,
+        receipt_number: payments.receipt_number,
+        paid_by: payments.paid_by,
+        confirmed_by: payments.confirmed_by,
+        confirmed_at: payments.confirmed_at,
+        rejected_at: payments.rejected_at,
+        rejected_by: payments.rejected_by,
+        reject_reason: payments.reject_reason,
+        voided_at: payments.voided_at,
+        voided_by: payments.voided_by,
+        void_reason: payments.void_reason,
+        deleted_at: payments.deleted_at,
+        created_at: payments.created_at,
+        student_name: students.full_name,
+        student_nis: students.nis,
+        student_class: students.class_name,
+      })
       .from(payments)
+      .leftJoin(students, eq(payments.student_id, students.id))
       .where(conditions)
       .orderBy(desc(payments.created_at))
       .limit(data.pageSize)
@@ -164,27 +212,48 @@ export const recordPayment = createServerFn({ method: "POST" })
       throw new Error("Nominal pembayaran atau infaq harus lebih dari 0.");
     }
     if (invoice.status === "cancelled") throw new Error("Tagihan dibatalkan.");
-    const sisa = invoice.amount - invoice.paid_amount;
+
+    // Live calculation of remaining amount from confirmed payments to prevent stale invoice.paid_amount race condition
+    const confirmedRow = await db
+      .select({ total: sql<number>`coalesce(sum(${payments.amount}), 0)` })
+      .from(payments)
+      .where(
+        and(
+          eq(payments.invoice_id, invoice.id),
+          eq(payments.status, "confirmed"),
+          isNull(payments.deleted_at),
+        ),
+      )
+      .get();
+    const currentPaid = confirmedRow?.total ?? 0;
+    const sisa = invoice.amount - currentPaid;
+    if (sisa <= 0 && data.amount > 0) {
+      throw new Error("Tagihan sudah lunas.");
+    }
     if (!invoice.allow_installment && data.amount > 0 && data.amount !== sisa) {
       throw new Error("Tagihan ini tidak mengizinkan cicilan. Pembayaran harus lunas sekaligus.");
     }
     if (data.amount > sisa) throw new Error("Nominal melebihi sisa tagihan.");
     const savedProofUrl = await persistProof(data.proof_url);
-    await db.insert(payments).values({
-      invoice_id: invoice.id,
-      student_id: invoice.student_id,
-      amount: data.amount,
-      infaq_amount: data.infaq_amount,
-      method: data.method,
-      status: "confirmed",
-      note: data.note?.trim() || null,
-      proof_url: savedProofUrl,
-      paid_by: user.id,
-      confirmed_by: user.id,
-      confirmed_at: new Date(),
-      receipt_number: buildReceiptNumber(),
+
+    await db.transaction(async (tx) => {
+      await tx.insert(payments).values({
+        invoice_id: invoice.id,
+        student_id: invoice.student_id,
+        amount: data.amount,
+        infaq_amount: data.infaq_amount,
+        method: data.method,
+        status: "confirmed",
+        note: data.note?.trim() || null,
+        proof_url: savedProofUrl,
+        paid_by: user.id,
+        confirmed_by: user.id,
+        confirmed_at: new Date(),
+        receipt_number: buildReceiptNumber(),
+      });
+      await recalcInvoice(invoice.id, tx);
     });
-    await recalcInvoice(invoice.id);
+
     void logAudit(user.id, "record_payment", "payment", invoice.id, { amount: data.amount });
     return { ok: true };
   });
@@ -199,18 +268,42 @@ export const confirmPayment = createServerFn({ method: "POST" })
       throw new Error("Hanya pembayaran menunggu yang bisa dikonfirmasi.");
     if (!payment.invoice_id) throw new Error("Pembayaran tanpa tagihan.");
     const invoice = await getInvoiceOrThrow(payment.invoice_id);
-    const sisa = invoice.amount - invoice.paid_amount;
+
+    // Live calculation of remaining amount before confirming
+    const confirmedRow = await db
+      .select({ total: sql<number>`coalesce(sum(${payments.amount}), 0)` })
+      .from(payments)
+      .where(
+        and(
+          eq(payments.invoice_id, invoice.id),
+          eq(payments.status, "confirmed"),
+          isNull(payments.deleted_at),
+        ),
+      )
+      .get();
+    const currentPaid = confirmedRow?.total ?? 0;
+    const sisa = invoice.amount - currentPaid;
     if (payment.amount > sisa) throw new Error("Nominal melebihi sisa tagihan.");
-    await db
-      .update(payments)
-      .set({
-        status: "confirmed",
-        confirmed_at: new Date(),
-        confirmed_by: user.id,
-        receipt_number: buildReceiptNumber(),
-      })
-      .where(eq(payments.id, payment.id));
-    await recalcInvoice(invoice.id);
+
+    // Atomic update with status guard to prevent double-confirmation race conditions
+    await db.transaction(async (tx) => {
+      const updated = await tx
+        .update(payments)
+        .set({
+          status: "confirmed",
+          confirmed_at: new Date(),
+          confirmed_by: user.id,
+          receipt_number: buildReceiptNumber(),
+        })
+        .where(and(eq(payments.id, payment.id), eq(payments.status, "pending")))
+        .returning();
+
+      if (updated.length === 0) {
+        throw new Error("Hanya pembayaran menunggu yang bisa dikonfirmasi.");
+      }
+      await recalcInvoice(invoice.id, tx);
+    });
+
     void logAudit(user.id, "confirm_payment", "payment", payment.id);
     return { ok: true };
   });
@@ -219,7 +312,7 @@ export const rejectPayment = createServerFn({ method: "POST" })
   .validator(z.object({ paymentId: z.string().min(1), reason: z.string().min(1).max(500) }))
   .handler(async ({ data }) => {
     const user = await requireAdmin();
-    await db
+    const updated = await db
       .update(payments)
       .set({
         status: "rejected",
@@ -227,7 +320,13 @@ export const rejectPayment = createServerFn({ method: "POST" })
         rejected_by: user.id,
         reject_reason: data.reason,
       })
-      .where(eq(payments.id, data.paymentId));
+      .where(and(eq(payments.id, data.paymentId), eq(payments.status, "pending")))
+      .returning();
+
+    if (updated.length === 0) {
+      throw new Error("Hanya pembayaran menunggu yang bisa ditolak.");
+    }
+
     void logAudit(user.id, "reject_payment", "payment", data.paymentId, { reason: data.reason });
     return { ok: true };
   });
@@ -238,18 +337,28 @@ export const voidPayment = createServerFn({ method: "POST" })
     const user = await requireAdmin();
     const payment = await db.select().from(payments).where(eq(payments.id, data.paymentId)).get();
     if (!payment || !payment.invoice_id) throw new Error("Pembayaran tidak ditemukan.");
+    const invoiceId = payment.invoice_id;
     if (payment.status !== "confirmed")
       throw new Error("Hanya pembayaran terkonfirmasi yang bisa dibatalkan.");
-    await db
-      .update(payments)
-      .set({
-        status: "voided",
-        voided_at: new Date(),
-        voided_by: user.id,
-        void_reason: data.reason,
-      })
-      .where(eq(payments.id, payment.id));
-    await recalcInvoice(payment.invoice_id);
+
+    await db.transaction(async (tx) => {
+      const updated = await tx
+        .update(payments)
+        .set({
+          status: "voided",
+          voided_at: new Date(),
+          voided_by: user.id,
+          void_reason: data.reason,
+        })
+        .where(and(eq(payments.id, payment.id), eq(payments.status, "confirmed")))
+        .returning();
+
+      if (updated.length === 0) {
+        throw new Error("Hanya pembayaran terkonfirmasi yang bisa dibatalkan.");
+      }
+      await recalcInvoice(invoiceId, tx);
+    });
+
     void logAudit(user.id, "void_payment", "payment", payment.id, { reason: data.reason });
     return { ok: true };
   });

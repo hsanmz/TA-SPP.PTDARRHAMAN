@@ -39,47 +39,47 @@
   --color-rose-light: #ffeeee;
   --color-rose-dark: #cc2f26;
 
-  /* Shadcn-style semantic tokens mapped to PPDB values */
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+  /* Shadcn-style semantic tokens mapped to PPDB values (wrapped with hsl() for Tailwind v4) */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
 
   /* Aliases kept for the existing shadcn ui/* primitives in this app */
-  --color-surface: var(--card);
-  --color-surface-2: var(--muted);
-  --color-on-primary: var(--primary-foreground);
-  --color-danger: var(--destructive);
+  --color-surface: hsl(var(--card));
+  --color-surface-2: hsl(var(--muted));
+  --color-on-primary: hsl(var(--primary-foreground));
+  --color-danger: hsl(var(--destructive));
   --color-success: var(--color-emerald-primary);
-  --color-success-foreground: var(--primary-foreground);
+  --color-success-foreground: hsl(var(--primary-foreground));
   --color-warning: var(--color-gold-accent);
-  --color-warning-foreground: var(--foreground);
+  --color-warning-foreground: hsl(var(--foreground));
   --color-teal: var(--color-emerald-primary);
-  --color-ring-offset-background: var(--background);
+  --color-ring-offset-background: hsl(var(--background));
 
-  --color-sidebar: var(--card);
-  --color-sidebar-foreground: var(--foreground);
-  --color-sidebar-primary: var(--primary);
-  --color-sidebar-primary-foreground: var(--primary-foreground);
-  --color-sidebar-accent: var(--muted);
-  --color-sidebar-accent-foreground: var(--foreground);
-  --color-sidebar-border: var(--border);
-  --color-sidebar-ring: var(--ring);
+  --color-sidebar: hsl(var(--card));
+  --color-sidebar-foreground: hsl(var(--foreground));
+  --color-sidebar-primary: hsl(var(--primary));
+  --color-sidebar-primary-foreground: hsl(var(--primary-foreground));
+  --color-sidebar-accent: hsl(var(--muted));
+  --color-sidebar-accent-foreground: hsl(var(--foreground));
+  --color-sidebar-border: hsl(var(--border));
+  --color-sidebar-ring: hsl(var(--ring));
 
   /* Typography: DM Sans heading, Playfair brand/h1, Inter display/body (PPDB) */
   --font-sans: "Inter", system-ui, sans-serif;
@@ -212,8 +212,8 @@
   --accent-foreground: 0 0% 10%;
   --destructive: 3 100% 59%; /* rose #FF3B30 */
   --destructive-foreground: 0 0% 100%;
-  --border: 153 12% 88%;
-  --input: 153 12% 88%;
+  --border: 43 16% 87%;
+  --input: 43 16% 87%;
   --ring: 153 61% 26%; /* emerald focus ring */
 
   /* Whole-color aliases for color-mix() consumers */
@@ -347,82 +347,45 @@
 }
 
 @layer components {
-  /* PPDB glass surfaces (apps/ppdb src/index.css) */
+  /* PPDB surfaces (refined: solid, clean, readable, without excessive transparent blurs) */
   .glass-card {
-    @apply bg-white/70 backdrop-blur-2xl border border-white/80 rounded-2xl sm:rounded-3xl transition-all duration-300;
-    box-shadow:
-      0 8px 32px 0 rgba(26, 107, 71, 0.06),
-      inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm transition-all duration-300;
   }
 
   .glass-card-interactive {
-    background-color: color-mix(in srgb, #ffffff 70%, transparent);
-    -webkit-backdrop-filter: blur(40px);
-    backdrop-filter: blur(40px);
-    border-style: var(--tw-border-style);
-    border-width: 1px;
-    border-color: color-mix(in srgb, #ffffff 80%, transparent);
-    border-radius: var(--radius-2xl);
-    transition-property: all;
-    transition-timing-function: var(
-      --default-transition-timing-function,
-      cubic-bezier(0.4, 0, 0.2, 1)
-    );
-    transition-duration: 300ms;
-    cursor: pointer;
-  }
-  @media (min-width: 640px) {
-    .glass-card-interactive {
-      border-radius: var(--radius-3xl);
-    }
-  }
-  .glass-card-interactive:hover {
-    background-color: color-mix(in srgb, #ffffff 85%, transparent);
-    transform: translateY(-4px);
-    box-shadow:
-      0 16px 40px 0 rgba(26, 107, 71, 0.12),
-      inset 0 1px 2px rgba(255, 255, 255, 0.9);
-  }
-  .glass-card-interactive:active {
-    transform: translateY(0) scale(0.99);
+    @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer transition-all duration-200;
   }
 
   .glass-panel {
-    @apply bg-white/75 backdrop-blur-2xl border border-white/80 rounded-2xl sm:rounded-3xl;
-    box-shadow:
-      0 12px 40px 0 rgba(0, 0, 0, 0.06),
-      inset 0 1px 1px rgba(255, 255, 255, 0.85);
+    @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm;
   }
 
   .glass-navbar {
-    @apply bg-white/70 backdrop-blur-xl border-b border-border;
+    @apply bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs;
   }
 
   .glass-sidebar {
-    @apply bg-white/80 backdrop-blur-xl border-r border-border;
+    @apply bg-white border-r border-slate-200/80 shadow-xs;
   }
 
   .glass-modal {
-    @apply bg-white/90 backdrop-blur-2xl border border-white/90 rounded-2xl sm:rounded-3xl;
-    box-shadow:
-      0 24px 64px rgba(0, 0, 0, 0.25),
-      inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    @apply bg-white border border-slate-200/80 rounded-2xl shadow-2xl;
   }
 
   .glass-input {
-    @apply bg-white/60 backdrop-blur-md border border-white/70 focus:bg-white/90 focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all rounded-xl shadow-inner text-sm sm:text-base;
+    @apply bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all rounded-xl shadow-xs text-sm;
   }
 
   .sidebar-item-active {
-    @apply bg-primary/10 text-primary shadow-sm;
+    @apply bg-primary/10 text-primary shadow-xs font-semibold;
   }
 
   .glow-emerald {
-    box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.25);
   }
 
   .glow-gold {
-    box-shadow: 0 0 25px rgba(212, 168, 83, 0.25);
+    box-shadow: 0 0 20px rgba(212, 168, 83, 0.25);
   }
 
   .arabic-quote {

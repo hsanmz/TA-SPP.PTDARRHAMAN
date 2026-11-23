@@ -94,10 +94,34 @@ Ditetapkan di `:root` CSS aplikasi:
   --accent-foreground: 0 0% 10%;
   --destructive: 3 100% 59%;      /* #FF3B30 Rose Red */
   --destructive-foreground: 0 0% 100%;
-  --border: 153 12% 88%;          /* Emerald-tinted hairline border */
-  --input: 153 12% 88%;
+  --border: 43 16% 87%;           /* Warm Ivory hairline border */
+  --input: 43 16% 87%;
   --ring: 153 61% 26%;
   --radius: 0.75rem;              /* 12px standar sudut melengkung kartu */
+}
+
+/* Pemetaan Tema Tailwind v4 (@theme inline) Wajib Dibungkus hsl() */
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-sidebar: hsl(var(--card));
 }
 ```
 
@@ -165,10 +189,13 @@ boxShadow: {
 }
 ```
 
-### 4.2. Glassmorphism & Transparansi
+### 4.2. Keseimbangan Permukaan & Transparansi (Toned-down Glassmorphism)
 
-- **Floating Header / Navbar:** Menggunakan latar putih tembus pandang `rgba(255, 255, 255, 0.88)` dengan efek `backdrop-blur-md` (12px) dan garis tepi halus `border: 1px solid rgba(26, 107, 71, 0.08)`.
-- **Modal Dialog & Bukti Transfer Zoom:** Latar hitam lembut `rgba(26, 26, 26, 0.5)` berpadu dengan `backdrop-blur-sm` (4px).
+Untuk menjaga ketajaman data numerik dan keterbacaan laporan keuangan pesantren, antarmuka menghindari transparansi berlebihan (*over-glassmorphism*):
+- **Kartu Data & Kontainer Operasional:** Menggunakan latar putih solid (`bg-white` / `bg-card`, `#FFFFFF`), garis batas halus (`border-slate-100` atau `border-slate-200/80`), dan sudut `rounded-2xl` dengan bayangan ringan `shadow-sm`.
+- **Floating Header / Navbar:** Menggunakan latar putih berdensitas tinggi `bg-white/95` dengan efek halus `backdrop-blur-md` dan garis pemisah `border-b border-slate-200/80 shadow-xs`.
+- **Sidebar Navigasi:** Menggunakan latar solid putih `bg-white` dengan batas `border-r border-slate-200/80` sehingga konten bergeser di belakangnya tidak membayang/tembus pandang.
+- **Modal Dialog & Bukti Transfer Zoom:** Latar dialog solid putih `bg-white` atau `bg-card` berpadu dengan backdrop gelap `bg-black/50 backdrop-blur-sm`.
 - **Sticky Form & Action Footers:** Latar `rgba(247, 245, 240, 0.95)` berpadu dengan `backdrop-blur-md` untuk menjaga kenyamanan tombol aksi di perangkat mobile saat scroll panjang.
 
 ---

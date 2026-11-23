@@ -91,6 +91,9 @@ type PaymentRow = {
   reject_reason: string | null;
   void_reason: string | null;
   receipt_number: string | null;
+  student_name?: string | null;
+  student_nis?: string | null;
+  student_class?: string | null;
 };
 
 const emptyForm = {
@@ -125,20 +128,21 @@ function Pembayaran() {
   const { data: students = [] } = useQuery({
     queryKey: ["students-min"],
     queryFn: () => listStudentsMin(),
+    enabled: isAdmin,
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ["open-invoices"],
     queryFn: () => listOpenInvoices(),
-    enabled: open,
+    enabled: isAdmin && open,
   });
 
   const { data, isPending, refetch, isFetching } = useQuery({
-    queryKey: ["payments", tab, page, search],
+    queryKey: ["payments", tab, page, search, isAdmin],
     queryFn: () =>
       listPayments({
         data: {
-          admin: true,
+          admin: isAdmin,
           status: tab === "all" ? undefined : tab,
           page,
           pageSize: PAGE_SIZE,
@@ -286,7 +290,7 @@ function Pembayaran() {
             },
             {
               icon: Banknote,
-              label: "Penerimaan Terverifikasi",
+              label: isAdmin ? "Penerimaan Terverifikasi" : "Total Terbayar",
               value: rupiah(totalRevenue),
               active: true,
             },
@@ -294,30 +298,28 @@ function Pembayaran() {
         />
 
         {/* Filter Status Bar */}
-        {isAdmin && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 mr-1">Filter Status:</span>
-            {statusFilters.map(([key, label]) => (
-              <Button
-                key={key}
-                size="sm"
-                variant={tab === key ? "default" : "outline"}
-                className={cn(
-                  "h-8 rounded-full text-xs px-3 font-semibold transition-all cursor-pointer",
-                  tab === key
-                    ? "bg-emerald-primary text-white shadow-xs"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50",
-                )}
-                onClick={() => {
-                  setTab(key);
-                  setPage(1);
-                }}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-semibold text-slate-500 mr-1">Filter Status:</span>
+          {statusFilters.map(([key, label]) => (
+            <Button
+              key={key}
+              size="sm"
+              variant={tab === key ? "default" : "outline"}
+              className={cn(
+                "h-8 rounded-full text-xs px-3 font-semibold transition-all cursor-pointer",
+                tab === key
+                  ? "bg-emerald-primary text-white shadow-xs"
+                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50",
+              )}
+              onClick={() => {
+                setTab(key);
+                setPage(1);
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
 
         {/* Toolbar Pencarian & Refresh */}
         <ToolbarCard
@@ -408,14 +410,18 @@ function Pembayaran() {
                           {/* Santri */}
                           <td className="py-3 px-4">
                             <div className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                              {st?.full_name ?? nama(p.student_id)}
+                              {p.student_name ?? st?.full_name ?? nama(p.student_id)}
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5">
-                              {st?.nis && (
-                                <span className="font-mono text-slate-500">NIS {st.nis}</span>
+                              {(p.student_nis ?? st?.nis) && (
+                                <span className="font-mono text-slate-500">
+                                  NIS {p.student_nis ?? st?.nis}
+                                </span>
                               )}
-                              {st?.class_name && (
-                                <span className="text-slate-400 ml-1">· Kelas {st.class_name}</span>
+                              {(p.student_class ?? st?.class_name) && (
+                                <span className="text-slate-400 ml-1">
+                                  · Kelas {p.student_class ?? st?.class_name}
+                                </span>
                               )}
                               {p.note && <span className="text-slate-500 ml-1">· {p.note}</span>}
                             </div>

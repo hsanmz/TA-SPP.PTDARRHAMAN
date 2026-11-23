@@ -59,9 +59,9 @@ Aplikasi telah mengadopsi 100% visual identity dan design tokens resmi dari **Pr
 
 ## 🧪 Verifikasi Sistem & Keamanan Teruji (Production Ready)
 
-- **Automated Testing Suite (35 Tests, 256 Assertions, 100% Pass Rate)**:
+- **Automated Testing Suite (37 Tests, 100% Pass Rate)**:
   - `unit-crypto-auth.test.ts`: Verifikasi enkripsi PBKDF2 (100.000 iterasi), SHA-256 tokens, penanganan kadaluarsa sesi, pemetaan hak akses berbasis peran (RBAC).
-  - `account-scenarios.test.ts`: 10 skenario riil mencakup relasi 1 wali banyak murid (1-to-many), isolasi tagihan antar murid, mitigasi IDOR, pemutusan hubungan tanpa orphan deletion, penonaktifan akun & revokasi instan sesi, transisi kelas/data santri, batasan unik integritas basis data, serta idempotensi penagihan SPP.
+  - `account-scenarios.test.ts`: 12 skenario riil mencakup relasi 1 wali banyak murid (1-to-many), isolasi tagihan antar murid, mitigasi IDOR, pemutusan hubungan tanpa orphan deletion, penonaktifan akun & revokasi instan sesi, transisi kelas/data santri, batasan unik integritas basis data, idempotensi penagihan SPP, isolasi riwayat transaksi multi-anak wali (termasuk pembayaran tunai dicatat kasir), serta proteksi transaksi atomik terhadap race condition konfirmasi/pembatalan ganda.
   - `http-ssr.test.ts`: Pengujian SSR Cloudflare worker, halaman login publik (`/auth`), slip kuitansi digital (`/kuitansi/:receiptNumber`), dan proteksi CRON endpoint (`/api/cron/generate-spp` dengan `CRON_SECRET`).
   - `performance-benchmark.test.ts`: Pengujian kinerja hashing PBKDF2, konkurensi query database (50 parallel reads: Avg/P50/P95/P99 latency), serta skalabilitas pembuatan dan resolusi token sesi.
   - CI/CD Quality Gate: Otomasi continuous integration via GitHub Actions (`.github/workflows/ci.yml`) yang memvalidasi type check, linting, test suite, dan production build otomatis.

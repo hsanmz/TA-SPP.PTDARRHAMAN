@@ -181,7 +181,7 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "fixed md:sticky top-0 left-0 z-40 h-dvh bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-xl flex flex-col border-r border-border/50 transition-all duration-300 print:hidden",
+        "fixed md:sticky top-0 left-0 z-40 h-dvh bg-white flex flex-col border-r border-slate-200/80 shadow-xs transition-all duration-300 print:hidden",
         mobileOpen
           ? "translate-x-0 w-64 max-w-[85vw] shadow-2xl"
           : "-translate-x-full md:translate-x-0",
@@ -190,7 +190,7 @@ export function DashboardSidebar({
     >
       <div
         className={cn(
-          "relative flex items-center border-b border-border/60 bg-white/30",
+          "relative flex items-center border-b border-slate-100 bg-white",
           isCollapsed ? "justify-center px-2 py-4" : "px-5 py-4",
         )}
       >
@@ -226,7 +226,7 @@ export function DashboardSidebar({
         )}
         <button
           onClick={() => onCollapsedChange(!collapsed)}
-          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 items-center justify-center rounded-full border border-border bg-white/90 text-muted-foreground shadow-sm transition-all hover:text-foreground hover:scale-110"
+          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-muted-foreground shadow-xs transition-all hover:text-foreground hover:scale-110"
           title={collapsed ? "Perlebar sidebar" : "Sempitkan sidebar"}
           aria-label={collapsed ? "Perlebar sidebar" : "Sempitkan sidebar"}
         >
@@ -257,7 +257,7 @@ export function DashboardSidebar({
       </nav>
 
       {footer && !isCollapsed && (
-        <div className="border-t border-border/60 px-3 py-4 space-y-2">{footer}</div>
+        <div className="border-t border-slate-100 px-3 py-4 space-y-2">{footer}</div>
       )}
     </aside>
   );

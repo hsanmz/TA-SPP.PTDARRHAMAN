@@ -353,6 +353,8 @@ audit_logs.user_id ────────────────────�
 | Nomor kuitansi otomatis | — | ✅ (`buildReceiptNumber`) |
 | Kuitansi digital (QR code) | — | ✅ (`/kuitansi/$nomor`) |
 | Search by nama siswa/NIS | — | ✅ |
+| Isolasi data riwayat pembayaran wali | — | ✅ (Filter berbasis `student_id` via relasi `parent_students`, mencakup pembayaran tunai kasir & transfer) |
+| Proteksi Race Condition Transaksional | — | ✅ (`db.transaction` atomik dengan status guard `pending`/`confirmed` pada Drizzle/D1) |
 
 ### 6.6 Pengeluaran Operasional
 
@@ -430,14 +432,14 @@ Bukti transfer disimpan sebagai base64 di tabel `payment_proofs` di Cloudflare D
 | **Siswa CRUD** | ✅ Lengkap | Soft-delete, detail per siswa |
 | **Orang Tua** | ✅ Lengkap | Link/unlink ke siswa |
 | **Tagihan** | ✅ Lengkap | SPP, non-SPP, event, cicilan |
-| **Pembayaran** | ✅ Lengkap | Konfirmasi, tolak, void, tunai |
+| **Pembayaran** | ✅ Lengkap & Atomik | Konfirmasi, tolak, void, tunai, isolasi riwayat anak wali, proteksi race condition D1/Drizzle |
 | **Kuitansi Digital** | ✅ Lengkap | QR code, shareable link |
 | **Pengeluaran** | ✅ Lengkap | CRUD, kategori |
 | **Laporan** | ✅ Lengkap | Per semester, ekspor Excel |
 | **Pengaturan** | ✅ Lengkap | SPP, bank, profil, kategori |
 | **Pengguna** | ✅ Lengkap | Superadmin kelola admin |
 | **Profil** | ✅ Lengkap | Edit info + ganti password |
-| **Testing** | ✅ 3 suite | Crypto/auth, scenarios, SSR |
+| **Testing** | ✅ 4 suite (100% Pass) | Crypto/auth (12 tests), account scenarios (22 tests), SSR/HTTP, performance benchmark |
 | **Deployment** | ✅ Cloudflare Workers | Via Wrangler |
 | **Impor CSV Siswa** | ❌ Belum ada | Rencana fitur berikutnya |
 | **Ekspor PDF Laporan** | ❌ Belum ada | Hanya Excel saat ini |

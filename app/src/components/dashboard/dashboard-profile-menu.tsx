@@ -45,7 +45,7 @@ export function DashboardProfileMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="group flex items-center gap-2.5 rounded-xl border border-transparent bg-white/50 py-1.5 pl-1.5 pr-2.5 sm:pr-3 text-left transition-all duration-200 hover:bg-white/80 hover:border-emerald-primary/20 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+        <button className="group flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white py-1.5 pl-1.5 pr-2.5 sm:pr-3 text-left shadow-xs transition-all duration-200 hover:border-emerald-primary/30 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
           <Avatar className="h-8 w-8 ring-1 ring-emerald-primary/20 transition-shadow group-hover:ring-emerald-primary/40">
             <AvatarImage src={user?.avatarUrl || undefined} className="object-cover" />
             <AvatarFallback className="bg-gradient-to-br from-emerald-primary to-[#145337] text-white text-sm font-bold">

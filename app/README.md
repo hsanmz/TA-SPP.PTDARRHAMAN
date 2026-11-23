@@ -125,11 +125,12 @@ Sistem mengadopsi 100% design system dan komponen antarmuka dari **Project PPDB*
    - Satu-satunya paket yang dipertahankan adalah dependensi build `@lovable.dev/vite-tanstack-config` di `devDependencies` yang diperlukan untuk orkestrasi build TanStack Start dan Nitro Cloudflare target.
 
 5. **Paritas Komponen Dashboard (`@repo/ui` & `apps/ppdb` project-ppdb)**:
-   - **Sidebar**: mengadopsi `DashboardSidebar` dari `packages/ui` project-ppdb dengan rail kaca putih gradien, indikator bar aktif vertikal, icon `LayoutDashboard` berlabel `"Dashboard"`, dan toggle collapse melayang beranimasi 180°.
-   - **Header Sidebar & BrandMark**: mengadopsi `BrandMark` dengan logo dinamis `/logo.png`, monogram kaligrafi Arab `"ار"`, nama `"PTDARRAHMAN"`, serta titik indikator status emerald bercahaya (`bg-emerald-primary shadow-[0_0_4px_rgba(26,107,71,0.5)]`).
-   - **Header Utama Bersih**: mengadopsi `DashboardHeader` yang dirancang minimalis dan bersih tanpa duplikasi judul halaman di desktop (sesuai `apps/ppdb` dan `apps/superadmin`), dilengkapi semantic search modal `Ctrl+K`, dan tombol hamburger menu pada perangkat mobile.
-   - **Dropdown Profile**: mengadopsi `DashboardProfileMenu` dengan kartu profil gradasi emerald halus, avatar fallback emerald ke gelap, badge peran pill berikon dot hijau, opsi _"Lihat Profil"_, dan tombol _"Keluar"_ warna `text-rose-danger`.
-   - **Dashboard Utama (`/beranda`)**: identik dengan `AdminDashboardPage.tsx` di `apps/ppdb`, menggunakan `PageHeaderCard` berblok metrik dinamis (Semester Aktif, Status Kas dengan pulse dot, Santri Terdaftar), 4 kolom `StatCard`, Bento Grid grafik 6 bulan `GrowthChartCard` & alert `AttentionCard`, serta baris distribusi 3 kolom.
+   - **Fondasi Warna & Token Tailwind v4**: Seluruh token semantik CSS (`--color-background`, `--color-card`, `--color-primary`, `--color-border`, dsb.) dibungkus menggunakan `hsl(var(...))` di `@theme inline`, memastikan Tailwind CSS v4 menghasilkan kode warna valid (bukan transparan) dan modifier opacity seperti `bg-primary/10` menghasilkan `color-mix()` yang akurat.
+   - **Kanvas & Kartu Kontras Tinggi**: Kanvas utama berlatar Gading Hangat (`#F7F5F0`, `bg-background`) dipadukan dengan permukaan kartu solid putih bersih (`#FFFFFF`, `bg-card` / `bg-white`), sudut melengkung `rounded-2xl`, dan garis batas halus (`border-slate-100` / `border-slate-200/80`), menghilangkan transparansi berlebih (*glassmorphism over*) agar data keuangan tajam dan mudah dibaca.
+   - **Sidebar Bersih & Solid**: Mengadopsi `DashboardSidebar` dari `packages/ui` project-ppdb dengan latar solid `bg-white`, border pemisah `border-r border-slate-200/80`, bayangan halus `shadow-xs`, indikator bar aktif vertikal emerald, icon `LayoutDashboard` berlabel `"Dashboard"`, dan toggle collapse melayang beranimasi 180°.
+   - **Header Utama & BrandMark**: Mengadopsi `DashboardHeader` solid `bg-white/95 backdrop-blur-md border-b border-slate-200/80`, `BrandMark` dinamis dengan monogram kaligrafi Arab `"ار"`, nama `"PTDARRAHMAN"`, serta titik indikator status emerald bercahaya (`bg-emerald-primary shadow-[0_0_4px_rgba(26,107,71,0.5)]`). Dilengkapi semantic search modal `Ctrl+K` dengan panel solid putih dan tombol menu mobile.
+   - **Dropdown Profile**: Mengadopsi `DashboardProfileMenu` dengan tombol picu solid berborder halus, kartu profil gradasi emerald halus, avatar fallback emerald ke gelap, badge peran pill berikon dot hijau, opsi _"Lihat Profil"_, dan tombol _"Keluar"_ warna `text-rose-danger`.
+   - **Dashboard Utama (`/beranda`)**: Identik dengan `AdminDashboardPage.tsx` di `apps/ppdb`, menggunakan `PageHeaderCard` berblok metrik dinamis (Semester Aktif, Status Kas dengan pulse dot, Santri Terdaftar), 4 kolom `StatCard`, Bento Grid grafik 6 bulan `GrowthChartCard` & alert `AttentionCard`, serta baris distribusi 3 kolom.
 6. **Paritas Desain UI Seluruh Halaman Operasional (Project PPDB Standards)**:
    - **Kuitansi Resmi (`/kuitansi/$nomor`)**: Menggunakan `OfficialReceiptCard` resmi berheader zamrud pekat (`bg-emerald-950`), watermark perisai `ShieldCheck`, QR code verifikasi langsung, serta toolbar aksi di bagian atas (Kembali, Cetak Slip, WhatsApp, Salin Link).
    - **Manajemen Tagihan (`/tagihan`)**: Tata letak tabel terpadu ala `DataPendaftarPage`, metrik `PageHeaderCard`, filter jenis (`SPP`, `Non-SPP`, `Event`) & status, `ToolbarCard`, dan baris tabel interaktif dengan progres cicilan dan badge dot status.
@@ -145,23 +146,25 @@ Sistem mengadopsi 100% design system dan komponen antarmuka dari **Project PPDB*
 Seluruh fitur sistem diuji secara otomatis dan lolos 100% menggunakan test runner bawaan Bun:
 
 ```sh
-# Menjalankan seluruh test suite (Unit Crypto, Account Scenarios 1-10, HTTP SSR)
-DATABASE_URL="file:./data/test-audit.db" CRON_SECRET="test-secret" bun test
+# Menjalankan seluruh test suite (Unit Crypto, Account Scenarios 1-12, HTTP SSR, Performance)
+DATABASE_URL="file:./data/ta-spp.db" CRON_SECRET="test-secret" bun test --timeout 30000
 
-# Menjalankan pengujian spesifik skenario manajemen akun & relasi wali-santri
-DATABASE_URL="file:./data/test-audit.db" bun test src/test/account-scenarios.test.ts
+# Menjalankan pengujian spesifik skenario manajemen akun & relasi wali-santri (12 skenario)
+DATABASE_URL="file:./data/ta-spp.db" bun test --timeout 30000 src/test/account-scenarios.test.ts
 
 # Menjalankan pengujian cryptographic auth & session lifecycle
-DATABASE_URL="file:./data/test-audit.db" bun test src/test/unit-crypto-auth.test.ts
+DATABASE_URL="file:./data/ta-spp.db" bun test --timeout 30000 src/test/unit-crypto-auth.test.ts
 
 # Menjalankan pengujian SSR Cloudflare worker & cron endpoints
-DATABASE_URL="file:./data/test-audit.db" CRON_SECRET="test-secret" bun test src/test/http-ssr.test.ts
+DATABASE_URL="file:./data/ta-spp.db" CRON_SECRET="test-secret" bun test --timeout 30000 src/test/http-ssr.test.ts
 ```
 
 ### Fitur Keamanan & Manajemen Akun Terverifikasi
 
 1. **Relasi Wali Murid 1-ke-Banyak (1-to-Many)**: Satu akun wali dapat mengelola banyak santri sekaligus dengan switcher dinamis di dashboard beranda (`/beranda`).
 2. **Isolasi Tagihan & IDOR Defense**: Verifikasi ketat otorisasi hubungan orang tua-santri pada `submitPayment` mencegah manipulasi tagihan santri lain (_Insecure Direct Object Reference_).
-3. **Manajemen Status Akun & Revokasi Sesi**: Tombol aktif/nonaktif akun wali di `/orang-tua` dan akun staf di `/pengguna` yang secara instan menghapus sesi aktif dan menolak akses masuk saat dinonaktifkan.
-4. **CRON Otomasi Tagihan SPP Terproteksi**: Endpoint `/api/cron/generate-spp` mewajibkan HTTP POST dan token `Bearer` rahasia `CRON_SECRET` dengan validasi parameter tahun (2000-2100) dan bulan (1-12).
-5. **Idempotensi Penagihan SPP**: Pemicuan ganda penagihan SPP untuk periode bulan dan tahun yang sama dijamin 100% tidak menghasilkan duplikasi tagihan berkat indeks parsial unik `invoices_spp_unique`.
+3. **Isolasi Riwayat Pembayaran Wali Murid**: Query `listPayments` bagi wali secara dinamis memfilter riwayat berdasarkan seluruh `student_id` yang terhubung via `parent_students`. Wali dapat melihat seluruh transaksi anak-anaknya—termasuk pembayaran tunai yang dicatat admin/kasir di kantor sekolah—tanpa bocornya transaksi santri lain.
+4. **Proteksi Concurrency & Atomic Transaction**: Mutasi pembayaran (`recordPayment`, `confirmPayment`, `voidPayment`) dilindungi dalam `db.transaction` atomik dengan status guard `where(eq(status, ...))`. Konfirmasi ganda atau pembatalan simultan menghasilkan 0 baris terdampak dan otomatis digagalkan.
+5. **Manajemen Status Akun & Revokasi Sesi**: Tombol aktif/nonaktif akun wali di `/orang-tua` dan akun staf di `/pengguna` yang secara instan menghapus sesi aktif dan menolak akses masuk saat dinonaktifkan.
+6. **CRON Otomasi Tagihan SPP Terproteksi**: Endpoint `/api/cron/generate-spp` mewajibkan HTTP POST dan token `Bearer` rahasia `CRON_SECRET` dengan validasi parameter tahun (2000-2100) dan bulan (1-12).
+7. **Idempotensi Penagihan SPP**: Pemicuan ganda penagihan SPP untuk periode bulan dan tahun yang sama dijamin 100% tidak menghasilkan duplikasi tagihan berkat indeks parsial unik `invoices_spp_unique`.
